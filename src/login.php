@@ -1,38 +1,75 @@
-USE agrochain_saas;
+<?php
+// src/login.php
+//
+// GET  -> show the login form
+// POST -> look up the user by email, verify the password, start a session
 
-CREATE TABLE IF NOT EXISTS tenants (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    subdomain VARCHAR(50) UNIQUE NOT NULL
-);
+require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/db.php';
 
-CREATE TABLE IF NOT EXISTS users(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    tenant_id INT, 
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    role ENUM('farmer', 'buyer', 'driver') NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
-);
+$error = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email    = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-CREATE TABLE IF NOT EXISTS products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    farmer_id INT NOT NULL,
-    crop_type VARCHAR(100) NOT NULL,
-    quantity_bags INT NOT NULL,
-    price_per_bag DECIMAL(10, 2) NOT NULL,
-    region VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (farmer_id) REFERENCES users(id) ON DELETE CASCADE
-);
+    if ($email === '' || $password === '') {
+        $error = 'Please enter both your email and password.';
+    } else {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
 
+        // password_verify() re-hashes the submitted password using the same
+        // salt/cost stored inside $user['password_hash'] and compares the
+        // result. This is the correct counterpart to password_hash() in
+        // register.php — never compare passwords with `===`.
+        //
+        // Deliberately vague error message: we say "Invalid email or
+        // password" whether the email doesn't exist OR the password was
+        // wrong. Saying "no account with that email" instead would let an
+        // attacker enumerate which emails are registered.
+        if ($user && password_verify($password, $user['password_hash'])) {
+            $_SESSION['user'] = [
+                'id'    => $user['id'],
+                'name'  => $user['name'],
+                'email' => $user['email'],
+                'role'  => $user['role'],
+            ];
+            header("Location: /dashboard.php");
+            exit;
+        } else {
+            $error = 'Invalid email or password.';
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — AgroChain</title>
+</head>
+<body>
+    <h1>Sign In</h1>
 
--- Demo Seed
-INSERT INTO tenants (name, subdomain) VALUES
-('Volta Farmers Co-op', 'volta'),
-('Ashanti Agri-Union', 'ashanti');
+    <?php if ($error): ?>
+        <p style="color:red;"><?= htmlspecialchars($error) ?></p>
+    <?php endif; ?>
 
-INSERT INTO users (tenant_id, name, email, role, password_hash) VALUES
-(1, "Kwame Annor-Baah Tawiah", 'kwame@volta.com', 'farmer', '$2y$10$WqfVjI6h9gB2Z.yIeZ7Gve.L10L9Q9D91gH0sT6RxeLq/v098n/F6');
+    <form method="POST" action="/login.php">
+        <label>Email
+            <input type="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+        </label><br>
+
+        <label>Password
+            <input type="password" name="password" required>
+        </label><br>
+
+        <button type="submit">Sign In</button>
+    </form>
+
+    <p>Don't have an account? <a href="/register.php">Create one</a></p>
+</body>
+</html>

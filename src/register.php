@@ -9,20 +9,31 @@ require_once __DIR__ . '/db.php';            // gives us $pdo
 
 $error = '';
 
+// Load the real list of tenants from the DB to populate the dropdown below.
+// We never hardcode this list in the form — if a new co-op gets added to the
+// tenants table tomorrow, this page picks it up automatically.
+$tenants = $pdo->query("SELECT id, name FROM tenants ORDER BY name")->fetchAll();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // trim() strips accidental leading/trailing whitespace (very common
     // when people copy-paste an email address, for instance).
-    $name     = trim($_POST['name'] ?? '');
-    $email    = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $role     = $_POST['role'] ?? '';
+    $name      = trim($_POST['name'] ?? '');
+    $email     = trim($_POST['email'] ?? '');
+    $password  = $_POST['password'] ?? '';
+    $role      = $_POST['role'] ?? '';
+    $tenant_id = $_POST['tenant_id'] ?? '';
 
     // Only accept roles that actually exist in the users.role ENUM.
     // Doing this check in PHP too (not just relying on the DB ENUM) means
     // we can show a friendly error instead of a raw SQL exception.
     $validRoles = ['farmer', 'buyer', 'driver'];
 
-    if ($name === '' || $email === '' || $password === '') {
+    // Never trust the tenant_id the browser sent — someone could tamper
+    // with the form and submit a tenant_id that doesn't exist. Cross-check
+    // it against the real list we just loaded from the DB.
+    $validTenantIds = array_column($tenants, 'id');
+
+    if ($name === '' || $email === '' || $password === '' || $tenant_id === '') {
         $error = 'Please fill in every field.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'That doesn\'t look like a valid email address.';
@@ -30,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Password must be at least 8 characters.';
     } elseif (!in_array($role, $validRoles, true)) {
         $error = 'Please choose a valid role.';
+    } elseif (!in_array((int) $tenant_id, $validTenantIds, true)) {
+        $error = 'Please choose a valid co-op.';
     } else {
         try {
             // password_hash() with PASSWORD_BCRYPT is the whole point here:
@@ -39,17 +52,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($password, PASSWORD_BCRYPT);
 
             $stmt = $pdo->prepare(
-                "INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)"
+                "INSERT INTO users (tenant_id, name, email, role, password_hash) VALUES (?, ?, ?, ?, ?)"
             );
-            $stmt->execute([$name, $email, $role, $hash]);
+            $stmt->execute([$tenant_id, $name, $email, $role, $hash]);
 
             // Log the new user straight in rather than making them submit
             // the login form immediately after — one less step of friction.
             $_SESSION['user'] = [
-                'id'    => $pdo->lastInsertId(),
-                'name'  => $name,
-                'email' => $email,
-                'role'  => $role,
+                'id'        => $pdo->lastInsertId(),
+                'tenant_id' => (int) $tenant_id,
+                'name'      => $name,
+                'email'     => $email,
+                'role'      => $role,
             ];
 
             header("Location: /dashboard.php");
@@ -102,6 +116,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <option value="farmer">Farmer</option>
                 <option value="buyer">Buyer</option>
                 <option value="driver">Driver</option>
+            </select>
+        </label><br>
+
+        <label>Co-op / Organization
+            <select name="tenant_id" required>
+                <option value="">-- Select --</option>
+                <?php foreach ($tenants as $tenant): ?>
+                    <option value="<?= (int) $tenant['id'] ?>">
+                        <?= htmlspecialchars($tenant['name']) ?>
+                    </option>
+                <?php endforeach; ?>
             </select>
         </label><br>
 
