@@ -1,0 +1,7 @@
+# Security: Ignore environment files containing passwords
+.env
+
+# OS/IDE temporary files
+.DS_Store
+.idea/
+.vscode/
