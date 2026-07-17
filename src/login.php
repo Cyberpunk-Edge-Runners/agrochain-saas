@@ -17,6 +17,18 @@ CREATE TABLE IF NOT EXISTS users(
 );
 
 
+CREATE TABLE IF NOT EXISTS products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    farmer_id INT NOT NULL,
+    crop_type VARCHAR(100) NOT NULL,
+    quantity_bags INT NOT NULL,
+    price_per_bag DECIMAL(10, 2) NOT NULL,
+    region VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (farmer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
 -- Demo Seed
 INSERT INTO tenants (name, subdomain) VALUES
 ('Volta Farmers Co-op', 'volta'),
