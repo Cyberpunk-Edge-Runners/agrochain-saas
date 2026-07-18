@@ -22,12 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $validRoles = ['farmer', 'buyer', 'driver'];
     $validTenantIds = array_column($tenants, 'id');
 
-    // Only farmers actually belong to a co-op — a tenant represents a real
-    // organization (e.g. "Volta Farmers Co-op"), and buyers/drivers aren't
-    // members of one just because they use the marketplace. So the co-op
-    // field is required ONLY when role=farmer; for everyone else it's
-    // optional and gets stored as NULL if left blank.
-    $tenantRequired = ($role === 'farmer');
+    // A tenant represents a real co-op (e.g. "Volta Farmers Co-op"). Both
+    // farmers AND drivers genuinely belong to one — a co-op has its own
+    // farmers AND its own delivery drivers. This matters beyond just
+    // record-keeping: when a farmer assigns a driver to deliver an order
+    // (orders.php), they can only pick from drivers in THEIR OWN tenant —
+    // that's the trust boundary. A driver with no tenant would never be
+    // assignable by anyone, so this has to be required, not optional.
+    //
+    // Buyers are the one role that's genuinely NOT a co-op member — they're
+    // an outside party purchasing FROM the marketplace. So the field is
+    // required for farmer/driver, and not even shown for buyer.
+    $tenantRequired = in_array($role, ['farmer', 'driver'], true);
 
     if ($name === '' || $email === '' || $password === '') {
         $error = 'Please fill in every field.';
@@ -38,17 +44,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!in_array($role, $validRoles, true)) {
         $error = 'Please choose a valid role.';
     } elseif ($tenantRequired && $tenant_id === '') {
-        $error = 'Please choose your co-op — required for farmer accounts.';
+        $error = 'Please choose your co-op — required for farmer and driver accounts.';
     } elseif ($tenant_id !== '' && !in_array((int) $tenant_id, $validTenantIds, true)) {
         // Someone selected/submitted a tenant that doesn't actually exist —
         // whether that's tampering with the form or a stale dropdown, don't
         // let an invalid tenant_id reach the INSERT.
         $error = 'Please choose a valid co-op.';
     } else {
-        // Normalize: empty string -> real NULL for the database, not the
-        // literal string "" (which would fail the FOREIGN KEY silently
-        // miscast, or just be wrong data).
-        $tenantIdForInsert = $tenant_id === '' ? null : (int) $tenant_id;
+        // Buyers never get a tenant, even if one somehow arrived in the
+        // POST data (e.g. via a tampered request) — force it to null
+        // rather than trusting the submitted value for that role.
+        $tenantIdForInsert = $tenantRequired && $tenant_id !== '' ? (int) $tenant_id : null;
 
         try {
             $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -116,10 +122,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
         </label><br>
 
-        <div id="tenant-field">
-            <label>Co-op / Organization <span id="tenant-hint">(required for farmers)</span>
+        <!-- This whole block starts hidden (style="display:none") and
+             only gets shown by JS when role is farmer or driver. Buyers
+             never see this field at all now, not even as "optional" —
+             it genuinely doesn't apply to them. -->
+        <div id="tenant-field" style="display:none;">
+            <label>Co-op / Organization
                 <select name="tenant_id" id="tenant_id">
-                    <option value="">-- None / Not Applicable --</option>
+                    <option value="">-- Select --</option>
                     <?php foreach ($tenants as $tenant): ?>
                         <option value="<?= (int) $tenant['id'] ?>">
                             <?= htmlspecialchars($tenant['name']) ?>
@@ -135,23 +145,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p>Already have an account? <a href="/login.php">Sign in</a></p>
 
     <script>
-        // Small progressive-enhancement touch: mark the co-op field as
-        // browser-required only when "Farmer" is picked, so buyers/drivers
-        // aren't blocked by a required attribute that doesn't apply to
-        // them. The REAL enforcement is server-side in the PHP above —
-        // this JS is just UX, never trusted as the actual security check
-        // (anyone can disable JS or edit the DOM before submitting).
+        // Progressive-enhancement UX only — the REAL enforcement is the
+        // server-side PHP check above ($tenantRequired), which runs
+        // regardless of whether JS executed at all. Anyone can disable
+        // JS or edit the DOM before submitting, so this script existing
+        // is purely about not showing/requiring a field that doesn't
+        // apply to the role someone picked — it is never the actual
+        // security boundary.
         function toggleTenantField() {
             const role = document.getElementById('role').value;
+            const field = document.getElementById('tenant-field');
             const tenantSelect = document.getElementById('tenant_id');
-            const hint = document.getElementById('tenant-hint');
 
-            if (role === 'farmer') {
+            if (role === 'farmer' || role === 'driver') {
+                field.style.display = 'block';
                 tenantSelect.required = true;
-                hint.textContent = '(required for farmers)';
             } else {
+                field.style.display = 'none';
                 tenantSelect.required = false;
-                hint.textContent = '(optional)';
+                tenantSelect.value = ''; // clear any prior selection if they switch to buyer
             }
         }
     </script>

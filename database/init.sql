@@ -75,15 +75,34 @@ CREATE TABLE IF NOT EXISTS products (
 -- (e.g. farmer lists 50 bags, buyer orders 20) — the order needs its own
 -- quantity, separate from whatever's left in the listing.
 -- -----------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
+-- orders: the full lifecycle is pending -> confirmed -> assigned -> delivered
+-- (or -> cancelled, from pending/confirmed).
+--   pending    buyer just placed the order, farmer hasn't acted yet
+--   confirmed  farmer has agreed to fulfill it, no driver picked yet
+--   assigned   farmer has picked a driver from THEIR OWN co-op (driver_id
+--              set) — the driver now sees this in their delivery queue
+--   delivered  driver has marked the goods as physically handed over —
+--              this is the actual "transfer complete" end state
+--   cancelled  farmer declined it (only possible from pending/confirmed —
+--              once a driver's already moving the goods, there's nothing
+--              left to "cancel" in this simple model)
+--
+-- driver_id uses ON DELETE SET NULL rather than CASCADE — if a driver
+-- account ever gets removed, we want the order history to survive (it
+-- just loses its driver reference), not vanish along with the account.
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,
     buyer_id INT NOT NULL,
+    driver_id INT NULL,
     quantity_bags INT NOT NULL,
-    status ENUM('pending', 'confirmed', 'cancelled') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'confirmed', 'assigned', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (driver_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- -----------------------------------------------------------------------------

@@ -22,6 +22,17 @@ $user = requireLogin();
         <p><a href="/products.php">Manage My Listings</a></p>
     <?php endif; ?>
 
+    <?php
+    $orderLinkLabels = [
+        'buyer'  => 'My Orders',
+        'farmer' => 'Orders On My Listings',
+        'driver' => 'My Delivery Queue',
+    ];
+    ?>
+    <?php if (isset($orderLinkLabels[$user['role']])): ?>
+        <p><a href="/orders.php"><?= htmlspecialchars($orderLinkLabels[$user['role']]) ?></a></p>
+    <?php endif; ?>
+
     <?php if (in_array($user['role'], ['farmer', 'driver'], true)): ?>
         <p><a href="/upload-documents.php">Upload Verification Documents</a></p>
     <?php endif; ?>
