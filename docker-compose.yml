@@ -26,6 +26,7 @@ services:
       - "8080:80"
     volumes:
       - ./src:/var/www/html
+      - uploads_data:/var/www/uploads
     environment:
       DB_HOST: database
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
