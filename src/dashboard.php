@@ -20,6 +20,10 @@ $user = requireLogin();
 
     <p><em>Product listings coming next — this page is just proving the login/session flow works end to end.</em></p>
 
+    <?php if ($user['role'] === 'farmer'): ?>
+        <p><a href="/upload-certificate.php">Upload a Crop Quality Certificate</a></p>
+    <?php endif; ?>
+
     <form method="POST" action="/logout.php">
         <button type="submit">Log Out</button>
     </form>

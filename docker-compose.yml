@@ -32,6 +32,7 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
     depends_on:
       - database
     restart: always
