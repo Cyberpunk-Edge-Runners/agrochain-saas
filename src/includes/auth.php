@@ -32,8 +32,15 @@ function requireLogin(): array {
 // Call this at the top of any page restricted to a specific role
 // (e.g. only farmers can reach the "add listing" page).
 function requireRole(string $role): array {
+    return requireAnyRole([$role]);
+}
+
+// Same idea, but for pages more than one role can reach — e.g. document
+// upload is relevant to both farmers (crop certificates) and drivers
+// (license, insurance), but not buyers.
+function requireAnyRole(array $roles): array {
     $user = requireLogin();
-    if ($user['role'] !== $role) {
+    if (!in_array($user['role'], $roles, true)) {
         http_response_code(403);
         die("You don't have access to this page.");
     }

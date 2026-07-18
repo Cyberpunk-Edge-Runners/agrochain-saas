@@ -40,3 +40,4 @@ services:
 
 volumes:
   db_data:
+  uploads_data:

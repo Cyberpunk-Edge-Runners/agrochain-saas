@@ -83,17 +83,22 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 -- -----------------------------------------------------------------------------
--- certificates: metadata for quality/safety documents a farmer uploads.
--- The actual file bytes will live in S3 once the cloud/AWS work happens —
--- this table only ever stores WHERE the file is, never the file itself.
--- Not wired up in the app yet either; here for the same reason as `orders`.
+-- documents: verification files a user uploads. Started out farmer-only
+-- (crop quality certificates) but drivers need their own verification too
+-- (license, vehicle insurance) before a co-op would trust them to move
+-- produce — so this is user_id + category rather than farmer_id, to cover
+-- both without a second near-identical table.
+--
+-- The actual file bytes will live in S3 once the AWS work happens — this
+-- table only ever stores WHERE the file is, never the file itself.
 -- -----------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS certificates (
+CREATE TABLE IF NOT EXISTS documents (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    farmer_id INT NOT NULL,
+    user_id INT NOT NULL,
+    category ENUM('crop_quality_certificate', 'drivers_license', 'vehicle_insurance') NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (farmer_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- -----------------------------------------------------------------------------

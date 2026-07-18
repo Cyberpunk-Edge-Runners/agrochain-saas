@@ -20,8 +20,8 @@ $user = requireLogin();
 
     <p><em>Product listings coming next — this page is just proving the login/session flow works end to end.</em></p>
 
-    <?php if ($user['role'] === 'farmer'): ?>
-        <p><a href="/upload-certificate.php">Upload a Crop Quality Certificate</a></p>
+    <?php if (in_array($user['role'], ['farmer', 'driver'], true)): ?>
+        <p><a href="/upload-document.php">Upload Verification Documents</a></p>
     <?php endif; ?>
 
     <form method="POST" action="/logout.php">
