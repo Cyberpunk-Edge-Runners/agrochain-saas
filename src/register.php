@@ -9,31 +9,27 @@ require_once __DIR__ . '/db.php';            // gives us $pdo
 
 $error = '';
 
-// Load the real list of tenants from the DB to populate the dropdown below.
-// We never hardcode this list in the form — if a new co-op gets added to the
-// tenants table tomorrow, this page picks it up automatically.
+// Load the real list of co-ops from the DB to populate the dropdown below.
 $tenants = $pdo->query("SELECT id, name FROM tenants ORDER BY name")->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // trim() strips accidental leading/trailing whitespace (very common
-    // when people copy-paste an email address, for instance).
     $name      = trim($_POST['name'] ?? '');
     $email     = trim($_POST['email'] ?? '');
     $password  = $_POST['password'] ?? '';
     $role      = $_POST['role'] ?? '';
     $tenant_id = $_POST['tenant_id'] ?? '';
 
-    // Only accept roles that actually exist in the users.role ENUM.
-    // Doing this check in PHP too (not just relying on the DB ENUM) means
-    // we can show a friendly error instead of a raw SQL exception.
     $validRoles = ['farmer', 'buyer', 'driver'];
-
-    // Never trust the tenant_id the browser sent — someone could tamper
-    // with the form and submit a tenant_id that doesn't exist. Cross-check
-    // it against the real list we just loaded from the DB.
     $validTenantIds = array_column($tenants, 'id');
 
-    if ($name === '' || $email === '' || $password === '' || $tenant_id === '') {
+    // Only farmers actually belong to a co-op — a tenant represents a real
+    // organization (e.g. "Volta Farmers Co-op"), and buyers/drivers aren't
+    // members of one just because they use the marketplace. So the co-op
+    // field is required ONLY when role=farmer; for everyone else it's
+    // optional and gets stored as NULL if left blank.
+    $tenantRequired = ($role === 'farmer');
+
+    if ($name === '' || $email === '' || $password === '') {
         $error = 'Please fill in every field.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'That doesn\'t look like a valid email address.';
@@ -41,26 +37,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Password must be at least 8 characters.';
     } elseif (!in_array($role, $validRoles, true)) {
         $error = 'Please choose a valid role.';
-    } elseif (!in_array((int) $tenant_id, $validTenantIds, true)) {
+    } elseif ($tenantRequired && $tenant_id === '') {
+        $error = 'Please choose your co-op — required for farmer accounts.';
+    } elseif ($tenant_id !== '' && !in_array((int) $tenant_id, $validTenantIds, true)) {
+        // Someone selected/submitted a tenant that doesn't actually exist —
+        // whether that's tampering with the form or a stale dropdown, don't
+        // let an invalid tenant_id reach the INSERT.
         $error = 'Please choose a valid co-op.';
     } else {
+        // Normalize: empty string -> real NULL for the database, not the
+        // literal string "" (which would fail the FOREIGN KEY silently
+        // miscast, or just be wrong data).
+        $tenantIdForInsert = $tenant_id === '' ? null : (int) $tenant_id;
+
         try {
-            // password_hash() with PASSWORD_BCRYPT is the whole point here:
-            // we never store the actual password anywhere, only a one-way
-            // hash of it. Even if the users table leaked, an attacker still
-            // can't read anyone's real password back out of password_hash.
             $hash = password_hash($password, PASSWORD_BCRYPT);
 
             $stmt = $pdo->prepare(
                 "INSERT INTO users (tenant_id, name, email, role, password_hash) VALUES (?, ?, ?, ?, ?)"
             );
-            $stmt->execute([$tenant_id, $name, $email, $role, $hash]);
+            $stmt->execute([$tenantIdForInsert, $name, $email, $role, $hash]);
 
-            // Log the new user straight in rather than making them submit
-            // the login form immediately after — one less step of friction.
             $_SESSION['user'] = [
                 'id'        => $pdo->lastInsertId(),
-                'tenant_id' => (int) $tenant_id,
+                'tenant_id' => $tenantIdForInsert,
                 'name'      => $name,
                 'email'     => $email,
                 'role'      => $role,
@@ -70,9 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         } catch (PDOException $e) {
-            // Error code 23000 = integrity constraint violation — in this
-            // table, that almost always means the email UNIQUE constraint
-            // was hit (someone already registered with that email).
             if ($e->getCode() === '23000') {
                 $error = 'An account with that email already exists.';
             } else {
@@ -111,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </label><br>
 
         <label>I am a...
-            <select name="role" required>
+            <select name="role" id="role" required onchange="toggleTenantField()">
                 <option value="">-- Select --</option>
                 <option value="farmer">Farmer</option>
                 <option value="buyer">Buyer</option>
@@ -119,20 +116,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
         </label><br>
 
-        <label>Co-op / Organization
-            <select name="tenant_id" required>
-                <option value="">-- Select --</option>
-                <?php foreach ($tenants as $tenant): ?>
-                    <option value="<?= (int) $tenant['id'] ?>">
-                        <?= htmlspecialchars($tenant['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </label><br>
+        <div id="tenant-field">
+            <label>Co-op / Organization <span id="tenant-hint">(required for farmers)</span>
+                <select name="tenant_id" id="tenant_id">
+                    <option value="">-- None / Not Applicable --</option>
+                    <?php foreach ($tenants as $tenant): ?>
+                        <option value="<?= (int) $tenant['id'] ?>">
+                            <?= htmlspecialchars($tenant['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+        </div><br>
 
         <button type="submit">Create Account</button>
     </form>
 
     <p>Already have an account? <a href="/login.php">Sign in</a></p>
+
+    <script>
+        // Small progressive-enhancement touch: mark the co-op field as
+        // browser-required only when "Farmer" is picked, so buyers/drivers
+        // aren't blocked by a required attribute that doesn't apply to
+        // them. The REAL enforcement is server-side in the PHP above —
+        // this JS is just UX, never trusted as the actual security check
+        // (anyone can disable JS or edit the DOM before submitting).
+        function toggleTenantField() {
+            const role = document.getElementById('role').value;
+            const tenantSelect = document.getElementById('tenant_id');
+            const hint = document.getElementById('tenant-hint');
+
+            if (role === 'farmer') {
+                tenantSelect.required = true;
+                hint.textContent = '(required for farmers)';
+            } else {
+                tenantSelect.required = false;
+                hint.textContent = '(optional)';
+            }
+        }
+    </script>
 </body>
 </html>

@@ -26,15 +26,19 @@ CREATE TABLE IF NOT EXISTS tenants (
 -- -----------------------------------------------------------------------------
 -- users: every person with a login — farmers, buyers, drivers.
 --
--- tenant_id is now NOT NULL. Previously it allowed NULL, which meant anyone
--- who registered through register.php never actually belonged to a tenant —
--- defeating the point of a "multi-tenant" schema. Every user now has to be
--- assigned to a real tenant at signup (register.php was updated to require
--- picking one from a dropdown).
+-- tenant_id is nullable — but unlike the earlier version of this schema,
+-- that's now an intentional, meaningful NULL rather than an accidental one.
+-- A tenant represents a farmer co-op (e.g. "Volta Farmers Co-op"). Farmers
+-- genuinely belong to one. Buyers are outside parties purchasing FROM the
+-- marketplace, not co-op members — forcing them to pick one didn't match
+-- the real relationship, it just made them choose an arbitrary value to
+-- satisfy the form. register.php enforces "required if role=farmer,
+-- optional otherwise" at the application layer, since MySQL's schema
+-- syntax can't express a conditional-on-another-column NOT NULL rule.
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    tenant_id INT NOT NULL,
+    tenant_id INT,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     role ENUM('farmer', 'buyer', 'driver') NOT NULL,

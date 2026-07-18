@@ -31,10 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // attacker enumerate which emails are registered.
         if ($user && password_verify($password, $user['password_hash'])) {
             $_SESSION['user'] = [
-                'id'    => $user['id'],
-                'name'  => $user['name'],
-                'email' => $user['email'],
-                'role'  => $user['role'],
+                'id'        => $user['id'],
+                'tenant_id' => $user['tenant_id'], // may be null — that's fine, buyers/drivers often have none
+                'name'      => $user['name'],
+                'email'     => $user['email'],
+                'role'      => $user['role'],
             ];
             header("Location: /dashboard.php");
             exit;
