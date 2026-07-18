@@ -114,7 +114,7 @@ $allCategoryLabels = array_merge(...array_values($categoriesForRole));
         <p style="color:green;"><?= htmlspecialchars($success) ?></p>
     <?php endif; ?>
 
-    <form method="POST" action="/upload-document.php" enctype="multipart/form-data">
+    <form method="POST" action="/upload-documents.php" enctype="multipart/form-data">
         <label>Document Type
             <select name="category" required>
                 <option value="">-- Select --</option>
