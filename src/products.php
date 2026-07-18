@@ -11,8 +11,19 @@ require_once __DIR__ . '/db.php';
 
 $user = requireRole('farmer');
 
+// $error only ever gets used for VALIDATION failures (bad input) — those
+// don't redirect, because we want to re-show the form so the farmer isn't
+// forced to retype everything just to fix one field. This is safe from
+// the double-submit problem because a validation failure never actually
+// wrote anything to the database — refreshing just re-shows the same
+// harmless error, nothing gets duplicated.
+//
+// $success used to work the same way (no redirect) — that was the actual
+// bug. Now, every path that DOES write to the database redirects
+// afterward and uses flashSet()/flashGet() (see includes/auth.php) to
+// carry the success message across that redirect instead.
 $error = '';
-$success = '';
+$success = flashGet('success');
 
 $ghanaRegions = [
     'Greater Accra', 'Ashanti', 'Eastern', 'Western', 'Central',
@@ -41,7 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "INSERT INTO products (farmer_id, crop_type, quantity_bags, price_per_bag, region) VALUES (?, ?, ?, ?, ?)"
             );
             $stmt->execute([$user['id'], $cropType, (int) $quantity, (float) $price, $region]);
-            $success = 'Listing published.';
+
+            // The write succeeded — queue the success message, then
+            // redirect to a plain GET of this same page. The browser's
+            // "last request" is now that GET, not the POST, so a refresh
+            // from here on just reloads the page instead of re-publishing
+            // the listing.
+            flashSet('success', 'Listing published.');
+            header('Location: /products.php');
+            exit;
         }
 
     } elseif ($action === 'delete') {
@@ -52,7 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // any other farmer's listing by changing product_id in the form.
         $stmt = $pdo->prepare("DELETE FROM products WHERE id = ? AND farmer_id = ?");
         $stmt->execute([$productId, $user['id']]);
-        $success = $stmt->rowCount() > 0 ? 'Listing removed.' : 'Listing not found.';
+
+        flashSet('success', $stmt->rowCount() > 0 ? 'Listing removed.' : 'Listing not found.');
+        header('Location: /products.php');
+        exit;
     }
 }
 
