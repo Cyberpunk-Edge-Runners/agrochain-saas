@@ -1,11 +1,11 @@
 <?php
-// src/login.php
+// public/login.php
 //
 // GET  -> show the login form
 // POST -> look up the user by email, verify the password, start a session
 
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/db.php';
 
 $error = '';
 
@@ -44,33 +44,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$pageTitle = 'Sign In';
+require __DIR__ . '/../includes/partials/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In — AgroChain</title>
-</head>
-<body>
-    <h1>Sign In</h1>
 
-    <?php if ($error): ?>
-        <p style="color:red;"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
+<div class="auth-screen">
+    <div class="ticket auth-card">
+        <h1>Sign In</h1>
+        <p class="auth-subtitle">Access your AgroChain account</p>
 
-    <form method="POST" action="/login.php">
-        <label>Email
-            <input type="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-        </label><br>
+        <?php if ($error): ?>
+            <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
-        <label>Password
-            <input type="password" name="password" required>
-        </label><br>
+        <form method="POST" action="/login.php">
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" required
+                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+            </div>
 
-        <button type="submit">Sign In</button>
-    </form>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" required>
+            </div>
 
-    <p>Don't have an account? <a href="/register.php">Create one</a></p>
-</body>
-</html>
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+
+        <p class="auth-footer">Don't have an account? <a href="/register.php">Create one</a></p>
+    </div>
+</div>
+
+<?php require __DIR__ . '/../includes/partials/footer.php'; ?>

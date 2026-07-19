@@ -6,8 +6,8 @@
 // POST action=create -> insert a new product row
 // POST action=delete -> remove one of YOUR OWN listings
 
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/db.php';
 
 $user = requireRole('farmer');
 
@@ -81,75 +81,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $pdo->prepare("SELECT * FROM products WHERE farmer_id = ? ORDER BY created_at DESC");
 $stmt->execute([$user['id']]);
 $myProducts = $stmt->fetchAll();
+
+$pageTitle = 'My Listings';
+require __DIR__ . '/../includes/partials/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Listings — AgroChain</title>
-</head>
-<body>
-    <h1>Manage Your Listings</h1>
 
-    <?php if ($error): ?>
-        <p style="color:red;"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
-    <?php if ($success): ?>
-        <p style="color:green;"><?= htmlspecialchars($success) ?></p>
-    <?php endif; ?>
+<h1>Manage Your Listings</h1>
 
+<?php if ($error): ?>
+    <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+<?php endif; ?>
+<?php if ($success): ?>
+    <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+<?php endif; ?>
+
+<div class="ticket">
     <h2>Publish a New Listing</h2>
     <form method="POST" action="/products.php">
         <input type="hidden" name="action" value="create">
 
-        <label>Crop Type
-            <input type="text" name="crop_type" placeholder="e.g., White Maize, Yam, Cocoa" required>
-        </label><br>
+        <div class="field">
+            <label for="crop_type">Crop Type</label>
+            <input id="crop_type" type="text" name="crop_type" placeholder="e.g., White Maize, Yam, Cocoa" required>
+        </div>
 
-        <label>Quantity (Bags)
-            <input type="number" name="quantity_bags" min="1" required>
-        </label><br>
+        <div class="field">
+            <label for="quantity_bags">Quantity (Bags)</label>
+            <input id="quantity_bags" type="number" name="quantity_bags" min="1" required>
+        </div>
 
-        <label>Price per Bag (GHS)
-            <input type="number" name="price_per_bag" min="0.01" step="0.01" required>
-        </label><br>
+        <div class="field">
+            <label for="price_per_bag">Price per Bag (GHS)</label>
+            <input id="price_per_bag" type="number" name="price_per_bag" min="0.01" step="0.01" required>
+        </div>
 
-        <label>Region
-            <select name="region" required>
+        <div class="field">
+            <label for="region">Region</label>
+            <select id="region" name="region" required>
                 <option value="">-- Select --</option>
                 <?php foreach ($ghanaRegions as $r): ?>
                     <option value="<?= htmlspecialchars($r) ?>"><?= htmlspecialchars($r) ?></option>
                 <?php endforeach; ?>
             </select>
-        </label><br>
+        </div>
 
-        <button type="submit">Publish Listing</button>
+        <button type="submit" class="btn btn-primary">Publish Listing</button>
     </form>
+</div>
 
-    <h2>My Listings</h2>
-    <?php if (empty($myProducts)): ?>
-        <p><em>You haven't listed any produce yet.</em></p>
-    <?php else: ?>
-        <ul>
-            <?php foreach ($myProducts as $product): ?>
-                <li>
-                    <strong><?= htmlspecialchars($product['crop_type']) ?></strong>
-                    — <?= (int) $product['quantity_bags'] ?> bags
-                    @ GHS <?= htmlspecialchars($product['price_per_bag']) ?>/bag
-                    (<?= htmlspecialchars($product['region']) ?>)
+<h2>My Listings</h2>
+<?php if (empty($myProducts)): ?>
+    <p class="row-meta">You haven't listed any produce yet.</p>
+<?php else: ?>
+    <ul class="data-list">
+        <?php foreach ($myProducts as $product): ?>
+            <li class="ticket">
+                <div class="row-title"><?= htmlspecialchars($product['crop_type']) ?></div>
+                <p class="row-meta">
+                    <span class="row-figure"><?= (int) $product['quantity_bags'] ?> bags</span>
+                    @ <span class="row-figure">GHS <?= htmlspecialchars($product['price_per_bag']) ?></span>/bag
+                    · <span class="stamp"><?= htmlspecialchars($product['region']) ?></span>
+                </p>
 
-                    <form method="POST" action="/products.php" style="display:inline;"
-                          onsubmit="return confirm('Remove this listing?');">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">
-                        <button type="submit">Remove</button>
-                    </form>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
+                <form method="POST" action="/products.php"
+                      onsubmit="return confirm('Remove this listing?');">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">
+                    <button type="submit" class="btn btn-danger">Remove</button>
+                </form>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
 
-    <p><a href="/dashboard.php">&larr; Back to Dashboard</a></p>
-</body>
-</html>
+<?php require __DIR__ . '/../includes/partials/footer.php'; ?>

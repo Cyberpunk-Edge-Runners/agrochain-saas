@@ -49,7 +49,7 @@ function storeDocumentFile(string $tmpPath, string $originalName): string {
  * docker-compose.yml mounts to a named volume so files survive a restart.
  */
 function storeDocumentFileLocal(string $tmpPath, string $safeName): string {
-    $uploadDir = __DIR__ . '/../../uploads/documents';
+    $uploadDir = __DIR__ . '/../uploads/documents';
 
     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
         throw new RuntimeException('Could not create local upload directory.');

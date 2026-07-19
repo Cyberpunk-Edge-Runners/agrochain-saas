@@ -4,8 +4,8 @@
 // GET  -> show the signup form
 // POST -> validate input, hash the password, insert the new user
 
-require_once __DIR__ . '/includes/auth.php'; // gives us session_start() etc.
-require_once __DIR__ . '/db.php';            // gives us $pdo
+require_once __DIR__ . '/../includes/auth.php'; // gives us session_start() etc.
+require_once __DIR__ . '/../includes/db.php';            // gives us $pdo
 
 $error = '';
 
@@ -85,50 +85,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$pageTitle = 'Create Account';
+require __DIR__ . '/../includes/partials/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account — AgroChain</title>
-</head>
-<body>
-    <h1>Create an AgroChain Account</h1>
 
-    <?php if ($error): ?>
-        <p style="color:red;"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
+<div class="auth-screen">
+    <div class="ticket auth-card">
+        <h1>Create Account</h1>
+        <p class="auth-subtitle">Join the AgroChain marketplace</p>
 
-    <form method="POST" action="/register.php">
-        <label>Full Name
-            <input type="text" name="name" required value="<?= htmlspecialchars($_POST['name'] ?? '') ?>">
-        </label><br>
+        <?php if ($error): ?>
+            <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
-        <label>Email
-            <input type="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-        </label><br>
+        <form method="POST" action="/register.php">
+            <div class="field">
+                <label for="name">Full Name</label>
+                <input id="name" type="text" name="name" required
+                       value="<?= htmlspecialchars($_POST['name'] ?? '') ?>">
+            </div>
 
-        <label>Password
-            <input type="password" name="password" required minlength="8">
-        </label><br>
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" required
+                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+            </div>
 
-        <label>I am a...
-            <select name="role" id="role" required onchange="toggleTenantField()">
-                <option value="">-- Select --</option>
-                <option value="farmer">Farmer</option>
-                <option value="buyer">Buyer</option>
-                <option value="driver">Driver</option>
-            </select>
-        </label><br>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" required minlength="8">
+            </div>
 
-        <!-- This whole block starts hidden (style="display:none") and
-             only gets shown by JS when role is farmer or driver. Buyers
-             never see this field at all now, not even as "optional" —
-             it genuinely doesn't apply to them. -->
-        <div id="tenant-field" style="display:none;">
-            <label>Co-op / Organization
-                <select name="tenant_id" id="tenant_id">
+            <div class="field">
+                <label for="role">I am a...</label>
+                <select id="role" name="role" required onchange="toggleTenantField()">
+                    <option value="">-- Select --</option>
+                    <option value="farmer">Farmer</option>
+                    <option value="buyer">Buyer</option>
+                    <option value="driver">Driver</option>
+                </select>
+            </div>
+
+            <!-- Starts hidden, only shown by JS when role is farmer or
+                 driver — buyers never see this field, it doesn't apply. -->
+            <div class="field" id="tenant-field" style="display:none;">
+                <label for="tenant_id">Co-op / Organization</label>
+                <select id="tenant_id" name="tenant_id">
                     <option value="">-- Select --</option>
                     <?php foreach ($tenants as $tenant): ?>
                         <option value="<?= (int) $tenant['id'] ?>">
@@ -136,36 +139,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </option>
                     <?php endforeach; ?>
                 </select>
-            </label>
-        </div><br>
+            </div>
 
-        <button type="submit">Create Account</button>
-    </form>
+            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
 
-    <p>Already have an account? <a href="/login.php">Sign in</a></p>
+        <p class="auth-footer">Already have an account? <a href="/login.php">Sign in</a></p>
+    </div>
+</div>
 
-    <script>
-        // Progressive-enhancement UX only — the REAL enforcement is the
-        // server-side PHP check above ($tenantRequired), which runs
-        // regardless of whether JS executed at all. Anyone can disable
-        // JS or edit the DOM before submitting, so this script existing
-        // is purely about not showing/requiring a field that doesn't
-        // apply to the role someone picked — it is never the actual
-        // security boundary.
-        function toggleTenantField() {
-            const role = document.getElementById('role').value;
-            const field = document.getElementById('tenant-field');
-            const tenantSelect = document.getElementById('tenant_id');
+<script>
+    // Progressive-enhancement UX only — the REAL enforcement is the
+    // server-side PHP check above ($tenantRequired), which runs
+    // regardless of whether JS executed at all.
+    function toggleTenantField() {
+        const role = document.getElementById('role').value;
+        const field = document.getElementById('tenant-field');
+        const tenantSelect = document.getElementById('tenant_id');
 
-            if (role === 'farmer' || role === 'driver') {
-                field.style.display = 'block';
-                tenantSelect.required = true;
-            } else {
-                field.style.display = 'none';
-                tenantSelect.required = false;
-                tenantSelect.value = ''; // clear any prior selection if they switch to buyer
-            }
+        if (role === 'farmer' || role === 'driver') {
+            field.style.display = 'block';
+            tenantSelect.required = true;
+        } else {
+            field.style.display = 'none';
+            tenantSelect.required = false;
+            tenantSelect.value = '';
         }
-    </script>
-</body>
-</html>
+    }
+</script>
+
+<?php require __DIR__ . '/../includes/partials/footer.php'; ?>

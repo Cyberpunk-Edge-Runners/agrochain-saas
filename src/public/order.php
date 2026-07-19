@@ -9,10 +9,10 @@
 // Pulls in session_start(), currentUser(), requireLogin(), requireRole(),
 // requireAnyRole() — everything this file needs for "who is this and are
 // they allowed to be here."
-require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../includes/auth.php';
 
 // Pulls in $pdo, our shared database connection object.
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../includes/db.php';
 
 // requireRole('buyer') does three things in one call:
 //   1. Calls requireLogin() internally, which redirects guests to

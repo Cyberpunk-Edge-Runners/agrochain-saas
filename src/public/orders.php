@@ -9,8 +9,8 @@
 // POST -> role-specific actions, each one ownership-checked so nobody can
 //         act on an order that isn't theirs to act on
 
-require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/db.php';
 
 // All three roles have a legitimate reason to be here — just very
 // different things once they land.
@@ -185,73 +185,71 @@ if ($user['role'] === 'buyer') {
     $stmt->execute([$user['id']]);
     $orders = $stmt->fetchAll();
 }
+
+$pageTitle = 'Orders';
+require __DIR__ . '/../includes/partials/header.php';
+
+$titles = [
+    'buyer'  => 'My Orders',
+    'farmer' => 'Orders On My Listings',
+    'driver' => 'My Delivery Queue',
+];
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders — AgroChain</title>
-</head>
-<body>
-    <?php
-    $titles = [
-        'buyer'  => 'My Orders',
-        'farmer' => 'Orders On My Listings',
-        'driver' => 'My Delivery Queue',
-    ];
-    ?>
-    <h1><?= htmlspecialchars($titles[$user['role']]) ?></h1>
 
-    <?php if (empty($orders)): ?>
-        <p><em>No orders yet.</em></p>
-    <?php else: ?>
-        <ul>
-            <?php foreach ($orders as $order): ?>
-                <li>
-                    <strong><?= (int) $order['quantity_bags'] ?> bags of <?= htmlspecialchars($order['crop_type']) ?></strong>
-                    — Status: <?= htmlspecialchars($order['status']) ?>
-                    <br>
+<h1><?= htmlspecialchars($titles[$user['role']]) ?></h1>
 
-                    <?php if ($user['role'] === 'buyer'): ?>
-                        <small>
-                            From <?= htmlspecialchars($order['farmer_name']) ?> ·
-                            Ordered <?= htmlspecialchars($order['created_at']) ?>
-                            <?php if ($order['driver_name']): ?>
-                                · Driver: <?= htmlspecialchars($order['driver_name']) ?>
-                            <?php endif; ?>
-                        </small>
+<?php if (empty($orders)): ?>
+    <p class="row-meta">No orders yet.</p>
+<?php else: ?>
+    <ul class="data-list">
+        <?php foreach ($orders as $order): ?>
+            <li class="ticket">
+                <div class="row-title"><?= (int) $order['quantity_bags'] ?> bags of <?= htmlspecialchars($order['crop_type']) ?></div>
+                <p class="row-meta">
+                    <span class="status status-<?= htmlspecialchars($order['status']) ?>"><?= htmlspecialchars($order['status']) ?></span>
+                </p>
 
-                    <?php elseif ($user['role'] === 'farmer'): ?>
-                        <small>
-                            From buyer: <?= htmlspecialchars($order['buyer_name']) ?> ·
-                            Ordered <?= htmlspecialchars($order['created_at']) ?>
-                            <?php if ($order['driver_name']): ?>
-                                · Driver: <?= htmlspecialchars($order['driver_name']) ?>
-                            <?php endif; ?>
-                        </small>
+                <?php if ($user['role'] === 'buyer'): ?>
+                    <p class="row-meta">
+                        From <?= htmlspecialchars($order['farmer_name']) ?> ·
+                        Ordered <?= htmlspecialchars($order['created_at']) ?>
+                        <?php if ($order['driver_name']): ?>
+                            · Driver: <?= htmlspecialchars($order['driver_name']) ?>
+                        <?php endif; ?>
+                    </p>
 
-                        <?php if ($order['status'] === 'pending'): ?>
-                            <br>
-                            <form method="POST" action="/orders.php" style="display:inline;">
+                <?php elseif ($user['role'] === 'farmer'): ?>
+                    <p class="row-meta">
+                        From buyer: <?= htmlspecialchars($order['buyer_name']) ?> ·
+                        Ordered <?= htmlspecialchars($order['created_at']) ?>
+                        <?php if ($order['driver_name']): ?>
+                            · Driver: <?= htmlspecialchars($order['driver_name']) ?>
+                        <?php endif; ?>
+                    </p>
+
+                    <?php if ($order['status'] === 'pending'): ?>
+                        <hr class="divider">
+                        <form method="POST" action="/orders.php" class="inline-form">
+                            <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
+                            <input type="hidden" name="action" value="confirm">
+                            <button type="submit" class="btn btn-primary">Confirm Order</button>
+                        </form>
+                        <form method="POST" action="/orders.php" class="inline-form">
+                            <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
+                            <input type="hidden" name="action" value="cancel">
+                            <button type="submit" class="btn btn-danger">Cancel Order</button>
+                        </form>
+
+                    <?php elseif ($order['status'] === 'confirmed'): ?>
+                        <hr class="divider">
+                        <?php if (empty($availableDrivers)): ?>
+                            <p class="row-meta"><em>No drivers registered under your co-op yet.</em></p>
+                        <?php else: ?>
+                            <form method="POST" action="/orders.php">
                                 <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
-                                <input type="hidden" name="action" value="confirm">
-                                <button type="submit">Confirm Order</button>
-                            </form>
-                            <form method="POST" action="/orders.php" style="display:inline;">
-                                <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
-                                <input type="hidden" name="action" value="cancel">
-                                <button type="submit">Cancel Order</button>
-                            </form>
-
-                        <?php elseif ($order['status'] === 'confirmed'): ?>
-                            <br>
-                            <?php if (empty($availableDrivers)): ?>
-                                <em>No drivers registered under your co-op yet.</em>
-                            <?php else: ?>
-                                <form method="POST" action="/orders.php" style="display:inline;">
-                                    <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
-                                    <input type="hidden" name="action" value="assign_driver">
+                                <input type="hidden" name="action" value="assign_driver">
+                                <div class="field">
+                                    <label>Assign a driver</label>
                                     <select name="driver_id" required>
                                         <option value="">-- Choose a driver --</option>
                                         <?php foreach ($availableDrivers as $driver): ?>
@@ -260,32 +258,31 @@ if ($user['role'] === 'buyer') {
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <button type="submit">Assign Driver</button>
-                                </form>
-                            <?php endif; ?>
-                        <?php endif; ?>
-
-                    <?php else: // driver ?>
-                        <small>
-                            Deliver to buyer: <?= htmlspecialchars($order['buyer_name']) ?> ·
-                            Pickup region: <?= htmlspecialchars($order['region']) ?>
-                        </small>
-
-                        <?php if ($order['status'] === 'assigned'): ?>
-                            <br>
-                            <form method="POST" action="/orders.php" style="display:inline;"
-                                  onsubmit="return confirm('Confirm the goods have been delivered?');">
-                                <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
-                                <input type="hidden" name="action" value="deliver">
-                                <button type="submit">Mark Delivered</button>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Assign Driver</button>
                             </form>
                         <?php endif; ?>
                     <?php endif; ?>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
 
-    <p><a href="/dashboard.php">&larr; Back to Dashboard</a></p>
-</body>
-</html>
+                <?php else: // driver ?>
+                    <p class="row-meta">
+                        Deliver to buyer: <?= htmlspecialchars($order['buyer_name']) ?> ·
+                        Pickup region: <span class="stamp"><?= htmlspecialchars($order['region']) ?></span>
+                    </p>
+
+                    <?php if ($order['status'] === 'assigned'): ?>
+                        <hr class="divider">
+                        <form method="POST" action="/orders.php"
+                              onsubmit="return confirm('Confirm the goods have been delivered?');">
+                            <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
+                            <input type="hidden" name="action" value="deliver">
+                            <button type="submit" class="btn btn-primary">Mark Delivered</button>
+                        </form>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
+
+<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
