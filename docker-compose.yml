@@ -16,7 +16,7 @@ services:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     restart: always
 
-  # Web Server...Service
+  # Web Server Service
   webserver:
     build:
       context: .
@@ -25,7 +25,8 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./src:/var/www/html
+      - ./public:/var/www/html
+      - ./includes:/var/www/includes
       - uploads_data:/var/www/uploads
     environment:
       DB_HOST: database

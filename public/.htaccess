@@ -1,0 +1,26 @@
+# public/.htaccess
+#
+# Strips .php off every URL. Requires mod_rewrite (enabled in the
+# Dockerfile via `RUN a2enmod rewrite`) and AllowOverride All on this
+# directory (set in webserver/000-default.conf) — without AllowOverride
+# All, Apache ignores .htaccess files entirely and none of this runs.
+
+RewriteEngine On
+
+# --- Rule 1: serve clean URLs internally ---
+# If someone requests /login, Apache would normally look for a literal
+# file named "login" and 404. This says: if that exact path does NOT
+# exist as a real file (!-f), but adding ".php" to it DOES exist as a
+# real file, silently serve that .php file instead — the URL bar still
+# shows /login, never /login.php. [L] means "stop processing rules here."
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
+# --- Rule 2: redirect AWAY from .php if someone types it directly ---
+# Without this, /login and /login.php would both work and serve
+# identical content — two URLs for one page. This catches any request
+# that explicitly ends in .php and sends a real 301 redirect to the same
+# path WITHOUT .php, so there's only ever one canonical URL per page.
+RewriteCond %{THE_REQUEST} \s/+([^.]+)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]

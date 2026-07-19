@@ -1,16 +1,28 @@
 /* =========================================================================
-   AGROCHAIN — DESIGN SYSTEM (v2: minimal white/green)
+   AGROCHAIN — DESIGN SYSTEM (v3)
    =========================================================================
-   Direction: mostly white, one green, Poppins. Deliberately avoiding the
-   generic "eco SaaS" look that this brief could easily slip into — soft
-   pastel badge pills, big border-radius cards, drifting drop shadows.
-   Instead: hairline borders instead of shadows, near-zero radius, and one
-   recurring structural device grounded in the actual subject — a thin
-   green rule down the left edge of every card, like a row marker in a
-   planted field. Status is shown as a small square dot + label, not a
-   rounded pill. Poppins carries the hierarchy through weight alone (800
-   for the wordmark, 700 for headings, 600 for actionable text, 400 for
-   body) rather than through color or size tricks.
+   WHAT CHANGED FROM v2 AND WHY
+   -----------------------------
+   v2 used a solid green bar down the left edge of every card. That's a
+   very recognizable pattern from Notion/Linear-style dashboard templates —
+   the kind of thing that reads as "generic AI-generated SaaS UI" the
+   instant you see it, regardless of the actual color used. It's removed
+   here.
+
+   In its place: ONE real signature device, used everywhere instead of
+   several different decorative tricks. It's a small leaf shape, drawn
+   entirely in CSS (no icon font, no image, no emoji) using a classic
+   border-radius trick: a plain square with two OPPOSITE corners rounded
+   all the way — top-right and bottom-left — turns a square into a
+   petal/leaf silhouette. It shows up in exactly three places: next to the
+   site wordmark, as a bullet before every card's title, and as the status
+   indicator. Reusing the same shape in all three spots is what makes it
+   read as an intentional identity mark rather than random decoration —
+   see the frontend-design principle of "spend your boldness in one place."
+
+   Everything else stays deliberately plain: white cards, hairline
+   borders, no shadows, no border-radius on the cards themselves. The
+   leaf is the one flourish; nothing else competes with it.
    ========================================================================= */
 
 /* -------------------------------------------------------------------------
@@ -18,20 +30,27 @@
    ------------------------------------------------------------------------- */
 :root {
   --white: #ffffff;
-  --bg: #f7f8f5;           /* barely-there warm-neutral page background — "mostly white" */
-  --ink: #17241c;          /* near-black with a green cast, not pure black */
-  --ink-soft: #5c6b60;     /* muted secondary text */
-  --border: #e1e6de;       /* hairline border color used instead of shadows */
+  --bg: #f7f8f5;            /* barely-off-white page background, so white cards still read as distinct */
+  --ink: #1c2a20;           /* near-black with a faint green cast, not pure #000 */
+  --ink-soft: #64715f;      /* muted secondary text */
+  --border: #e4e8e0;        /* hairline border color, used instead of shadows everywhere */
 
-  --green: #1f7a4d;        /* primary accent — links, buttons, focus, the left-edge rule */
-  --green-deep: #14532f;   /* pressed/hover state, wordmark */
-  --green-pale: #eaf3ec;   /* faint wash — hover rows, subtle emphasis only */
+  /* Lighter green than before — v2 used a fairly deep, saturated green
+     (#1f7a4d) for almost everything, including button fills. Here the
+     ACCENT green (leaf marks, focus rings, links) is a noticeably
+     lighter, fresher green. A slightly deeper shade is kept separately
+     (--green-btn) ONLY for solid button fills and status text, purely
+     because white text needs more contrast to stay readable — the
+     lightness of the main accent isn't compromised anywhere else. */
+  --green: #5cb37d;         /* the accent — leaf marks, links, focus rings, borders */
+  --green-btn: #3f9c63;     /* slightly deeper — solid button fill only, for text contrast */
+  --green-deep: #276b45;    /* darkest green — hover states, deep text on white */
+  --green-pale: #eef7f1;    /* faint wash — success alert background only */
 
-  --amber: #a97a1f;
-  --blue: #2f5f8a;
-  --red: #a3372a;
-  --red-pale: #fbeae7;
-  --green-pale-status: #e7f3ea;
+  --amber: #b4893a;
+  --blue: #4a7ea3;
+  --red: #b1503f;
+  --red-pale: #fbeeeb;
 
   --font: "Poppins", "Segoe UI", sans-serif;
 
@@ -41,7 +60,7 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --radius: 2px;
+  --radius: 3px;
 }
 
 /* -------------------------------------------------------------------------
@@ -61,23 +80,10 @@ body {
   min-height: 100vh;
 }
 
-h1 {
-  font-family: var(--font);
-  font-weight: 700;
-  font-size: 26px;
-  margin: 0 0 var(--space-2);
-  color: var(--ink);
-}
+h1 { font-family: var(--font); font-weight: 700; font-size: 25px; margin: 0 0 var(--space-2); }
+h2 { font-family: var(--font); font-weight: 600; font-size: 16px; margin: var(--space-5) 0 var(--space-3); }
 
-h2 {
-  font-family: var(--font);
-  font-weight: 600;
-  font-size: 17px;
-  margin: var(--space-5) 0 var(--space-3);
-  color: var(--ink);
-}
-
-a { color: var(--green); text-decoration: none; }
+a { color: var(--green-deep); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
@@ -90,9 +96,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* -------------------------------------------------------------------------
-   3. SITE HEADER / NAV
-   White bar, thin green rule beneath it — the accent does the work, not
-   a filled color block.
+   3. THE SIGNATURE LEAF SHAPE
+   ------------------------------------------------------------------------- */
+.leaf {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 0 100% 0 100%;
+  flex-shrink: 0;
+}
+
+.leaf-outline {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 0 100% 0 100%;
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------------------------
+   4. SITE HEADER / NAV
    ------------------------------------------------------------------------- */
 .topbar {
   display: flex;
@@ -100,15 +126,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   align-items: center;
   padding: var(--space-4) var(--space-6);
   background: var(--white);
-  border-bottom: 2px solid var(--green);
+  border-bottom: 1px solid var(--border);
 }
 
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 800;
-  color: var(--green-deep);
+  color: var(--ink);
   letter-spacing: -0.01em;
+}
+.wordmark::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--green);
+  border-radius: 0 100% 0 100%;
 }
 
 .wordmark span {
@@ -120,22 +157,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .topnav { display: flex; align-items: center; gap: var(--space-4); }
 .topnav a { font-weight: 500; font-size: 14px; color: var(--ink-soft); }
-.topnav a:hover { color: var(--green); text-decoration: none; }
+.topnav a:hover { color: var(--green-deep); text-decoration: none; }
 .inline-form { display: inline; }
 
 .page-body { padding: var(--space-6); max-width: 880px; margin: 0 auto; }
 
 /* -------------------------------------------------------------------------
-   4. SIGNATURE ELEMENT — the row card
-   A plain white card, hairline border, and a solid green rule down the
-   left edge — like a marker at the start of a planted row. No shadow, no
-   large radius, no rotation. This is the one repeated device across every
-   listing, order, and document row in the app.
+   5. CARDS
    ------------------------------------------------------------------------- */
 .ticket {
   background: var(--white);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--green);
   border-radius: var(--radius);
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-3);
@@ -146,7 +178,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   font-family: var(--font);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--green-deep);
   background: var(--green-pale);
@@ -154,10 +186,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   padding: 2px 8px;
 }
 
-/* Status: a small square dot + label, not a pill. The dot's color is the
-   only thing that changes between states — everything else about the
-   treatment stays identical, which is what makes it read as data rather
-   than decoration. */
 .status {
   display: inline-flex;
   align-items: center;
@@ -171,19 +199,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .status::before {
   content: "";
+  display: inline-block;
   width: 8px;
   height: 8px;
-  display: inline-block;
-  border-radius: 1px;
+  border-radius: 0 100% 0 100%;
 }
-.status-pending::before   { background: var(--amber); }
+.status-pending::before   { background: transparent; border: 1.5px solid var(--amber); }
 .status-confirmed::before { background: var(--green); }
 .status-assigned::before  { background: var(--blue); }
 .status-delivered::before { background: var(--green-deep); }
 .status-cancelled::before { background: var(--red); }
+.status-cancelled { color: var(--red); }
 
 /* -------------------------------------------------------------------------
-   5. BUTTONS
+   6. BUTTONS
    ------------------------------------------------------------------------- */
 .btn {
   font-family: var(--font);
@@ -195,7 +224,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border: 1px solid transparent;
 }
 
-.btn-primary { background: var(--green); color: var(--white); }
+.btn-primary { background: var(--green-btn); color: var(--white); }
 .btn-primary:hover { background: var(--green-deep); }
 
 .btn-danger { background: var(--white); color: var(--red); border-color: var(--red); }
@@ -205,12 +234,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background: none; border: none; color: var(--ink-soft); font-family: var(--font);
   font-weight: 500; cursor: pointer; padding: 0; font-size: 14px;
 }
-.btn-ghost:hover { color: var(--green); }
+.btn-ghost:hover { color: var(--green-deep); }
 
 .btn-block { width: 100%; }
 
 /* -------------------------------------------------------------------------
-   6. FORMS
+   7. FORMS
    ------------------------------------------------------------------------- */
 .field { margin-bottom: var(--space-4); }
 .field label {
@@ -239,8 +268,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* -------------------------------------------------------------------------
-   7. ALERTS — a left rule instead of a full pastel fill, consistent with
-   the card treatment above.
+   8. ALERTS
    ------------------------------------------------------------------------- */
 .alert {
   font-family: var(--font);
@@ -252,23 +280,41 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-left: 3px solid;
 }
 .alert-error   { background: var(--red-pale); color: var(--red); border-left-color: var(--red); }
-.alert-success { background: var(--green-pale-status); color: var(--green-deep); border-left-color: var(--green); }
+.alert-success { background: var(--green-pale); color: var(--green-deep); border-left-color: var(--green); }
 
 /* -------------------------------------------------------------------------
-   8. LOGIN / REGISTER CARDS
+   9. LOGIN / REGISTER CARDS
    ------------------------------------------------------------------------- */
 .auth-screen { display: flex; justify-content: center; padding-top: var(--space-6); }
-.auth-card { width: 380px; border-left-width: 4px; }
+.auth-card { width: 380px; }
 .auth-card h1 { font-size: 20px; text-align: center; }
 .auth-subtitle { text-align: center; font-size: 13px; color: var(--ink-soft); margin-bottom: var(--space-4); }
 .auth-footer { text-align: center; margin-top: var(--space-4); font-size: 13px; color: var(--ink-soft); }
 
 /* -------------------------------------------------------------------------
-   9. LISTS / DATA ROWS
+   10. LISTS / DATA ROWS
    ------------------------------------------------------------------------- */
 .data-list { list-style: none; margin: 0; padding: 0; }
 
-.row-title { font-family: var(--font); font-weight: 600; font-size: 15px; color: var(--ink); }
+.row-title {
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.row-title::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: var(--green);
+  border-radius: 0 100% 0 100%;
+  flex-shrink: 0;
+}
+
 .row-meta { font-size: 13px; color: var(--ink-soft); margin: var(--space-2) 0; }
 .row-figure { font-weight: 700; color: var(--ink); }
 

@@ -1,6 +1,12 @@
 # Security: Ignore environment files containing passwords
 .env
 
+# Uploaded files should never be committed — they live in the uploads_data
+# Docker volume at runtime, not in the repo. A real uploaded document
+# ended up tracked in git at one point (src/uploads/...) before this
+# rule existed — this stops that happening again.
+uploads/
+
 # OS/IDE temporary files
 .DS_Store
 .idea/

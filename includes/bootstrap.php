@@ -10,9 +10,9 @@
 
 // dirname(__DIR__) from inside includes/ resolves to the project root —
 // the parent of includes/ — regardless of where the whole project lives
-// on disk (works the same on your machine, in the container, anywhere).
-// BASE_PATH is the one source of truth every other path constant below
-// builds on, so there's never a second place that needs to agree with it.
+// on disk. BASE_PATH is the one source of truth every other path
+// constant below builds on, so there's never a second place that needs
+// to agree with it.
 define('BASE_PATH', dirname(__DIR__));
 define('INCLUDES_PATH', BASE_PATH . '/includes');
 define('PARTIALS_PATH', INCLUDES_PATH . '/partials');
