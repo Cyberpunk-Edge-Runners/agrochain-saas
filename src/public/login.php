@@ -4,8 +4,7 @@
 // GET  -> show the login form
 // POST -> look up the user by email, verify the password, start a session
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 $error = '';
 
@@ -46,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Sign In';
-require __DIR__ . '/../includes/partials/header.php';
+require PARTIALS_PATH . '/header.php';
 ?>
 
 <div class="auth-screen">
@@ -77,4 +76,4 @@ require __DIR__ . '/../includes/partials/header.php';
     </div>
 </div>
 
-<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
+<?php require PARTIALS_PATH . '/footer.php'; ?>

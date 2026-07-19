@@ -8,9 +8,8 @@
 // a farmer uploads a crop quality certificate, a driver uploads a license
 // or vehicle insurance. Buyers have no reason to be here at all.
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/storage.php';
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once INCLUDES_PATH . '/storage.php';
 
 $user = requireAnyRole(['farmer', 'driver']);
 
@@ -89,7 +88,7 @@ $documents = $stmt->fetchAll();
 $allCategoryLabels = array_merge(...array_values($categoriesForRole));
 
 $pageTitle = 'Upload Documents';
-require __DIR__ . '/../includes/partials/header.php';
+require PARTIALS_PATH . '/header.php';
 ?>
 
 <h1>Upload Verification Document</h1>
@@ -143,4 +142,4 @@ require __DIR__ . '/../includes/partials/header.php';
     </ul>
 <?php endif; ?>
 
-<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
+<?php require PARTIALS_PATH . '/footer.php'; ?>

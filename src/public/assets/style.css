@@ -1,49 +1,47 @@
 /* =========================================================================
-   AGROCHAIN — DESIGN SYSTEM
+   AGROCHAIN — DESIGN SYSTEM (v2: minimal white/green)
    =========================================================================
-   Same "market weigh-ticket" concept as the app's original design
-   direction: this platform's real-world counterpart is a farmer co-op
-   weigh station, where produce gets graded and the farmer walks away with
-   a hand-torn paper ticket. That's the visual language here — deep
-   canopy-green background, warm "ledger paper" cards with a torn top
-   edge, a rotated ink-stamp badge for status/region tags, and a monospace
-   face for anything that's actual DATA (prices, quantities, statuses) so
-   numbers read like they were typed on a ledger, not styled by a
-   designer.
+   Direction: mostly white, one green, Poppins. Deliberately avoiding the
+   generic "eco SaaS" look that this brief could easily slip into — soft
+   pastel badge pills, big border-radius cards, drifting drop shadows.
+   Instead: hairline borders instead of shadows, near-zero radius, and one
+   recurring structural device grounded in the actual subject — a thin
+   green rule down the left edge of every card, like a row marker in a
+   planted field. Status is shown as a small square dot + label, not a
+   rounded pill. Poppins carries the hierarchy through weight alone (800
+   for the wordmark, 700 for headings, 600 for actionable text, 400 for
+   body) rather than through color or size tricks.
    ========================================================================= */
 
 /* -------------------------------------------------------------------------
    1. TOKENS
    ------------------------------------------------------------------------- */
 :root {
-  --forest: #21331d;
-  --forest-deep: #16230f;
-  --paper: #f4ecd8;
-  --paper-dim: #e8dcbd;
-  --ink: #23291f;
-  --ink-soft: #5e6152;
-  --maize: #e3a53a;
-  --maize-deep: #b9822a;
-  --clay: #b1492c;
-  --clay-soft: #f3d9cd;
-  --leaf: #5c8a44;
-  --leaf-soft: #dcead0;
-  --stamp: #8a2f2f;
+  --white: #ffffff;
+  --bg: #f7f8f5;           /* barely-there warm-neutral page background — "mostly white" */
+  --ink: #17241c;          /* near-black with a green cast, not pure black */
+  --ink-soft: #5c6b60;     /* muted secondary text */
+  --border: #e1e6de;       /* hairline border color used instead of shadows */
 
-  --font-display: "Space Grotesk", "Arial Narrow", sans-serif;
-  --font-body: "Work Sans", "Segoe UI", sans-serif;
-  --font-data: "JetBrains Mono", "Courier New", monospace;
+  --green: #1f7a4d;        /* primary accent — links, buttons, focus, the left-edge rule */
+  --green-deep: #14532f;   /* pressed/hover state, wordmark */
+  --green-pale: #eaf3ec;   /* faint wash — hover rows, subtle emphasis only */
 
-  --space-1: 4px;
+  --amber: #a97a1f;
+  --blue: #2f5f8a;
+  --red: #a3372a;
+  --red-pale: #fbeae7;
+  --green-pale-status: #e7f3ea;
+
+  --font: "Poppins", "Segoe UI", sans-serif;
+
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
-  --space-7: 48px;
 
-  --radius: 3px;
-  --shadow-card: 0 10px 24px rgba(22, 35, 15, 0.35);
+  --radius: 2px;
 }
 
 /* -------------------------------------------------------------------------
@@ -53,22 +51,37 @@
 
 body {
   margin: 0;
-  background-color: var(--forest);
-  background-image: repeating-linear-gradient(
-    135deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px,
-    transparent 1px, transparent 14px
-  );
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body);
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
-h1, h2, h3 { font-family: var(--font-display); margin: 0 0 var(--space-3); }
-a { color: var(--maize); }
+h1 {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 26px;
+  margin: 0 0 var(--space-2);
+  color: var(--ink);
+}
+
+h2 {
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 17px;
+  margin: var(--space-5) 0 var(--space-3);
+  color: var(--ink);
+}
+
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
-  outline: 3px solid var(--maize);
+  outline: 2px solid var(--green);
   outline-offset: 2px;
 }
 
@@ -77,121 +90,122 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* -------------------------------------------------------------------------
-   3. SITE HEADER / NAV (shared across every page via includes/partials/header.php)
+   3. SITE HEADER / NAV
+   White bar, thin green rule beneath it — the accent does the work, not
+   a filled color block.
    ------------------------------------------------------------------------- */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: var(--space-4) var(--space-6);
-  border-bottom: 3px solid var(--maize);
+  background: var(--white);
+  border-bottom: 2px solid var(--green);
 }
 
 .wordmark {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--paper);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  text-decoration: none;
+  font-family: var(--font);
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--green-deep);
+  letter-spacing: -0.01em;
 }
 
 .wordmark span {
-  font-family: var(--font-data);
-  font-size: 11px;
-  color: var(--maize);
-  text-transform: none;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--ink-soft);
   margin-left: var(--space-2);
 }
 
 .topnav { display: flex; align-items: center; gap: var(--space-4); }
-.topnav a { color: var(--paper); font-size: 14px; text-decoration: none; }
-.topnav a:hover { color: var(--maize); }
+.topnav a { font-weight: 500; font-size: 14px; color: var(--ink-soft); }
+.topnav a:hover { color: var(--green); text-decoration: none; }
 .inline-form { display: inline; }
 
-.page-body { padding: var(--space-6); max-width: 900px; margin: 0 auto; }
+.page-body { padding: var(--space-6); max-width: 880px; margin: 0 auto; }
 
 /* -------------------------------------------------------------------------
-   4. SIGNATURE ELEMENT — the "ticket" card
-   Torn top edge via a scalloped mask, dashed perforation line underneath.
-   Used for every listing/order/document row.
+   4. SIGNATURE ELEMENT — the row card
+   A plain white card, hairline border, and a solid green rule down the
+   left edge — like a marker at the start of a planted row. No shadow, no
+   large radius, no rotation. This is the one repeated device across every
+   listing, order, and document row in the app.
    ------------------------------------------------------------------------- */
 .ticket {
-  background: var(--paper);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--green);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
-  position: relative;
-  -webkit-mask-image: radial-gradient(circle at 8px 0, transparent 7px, black 7.5px);
-  -webkit-mask-size: 16px 100%;
-  -webkit-mask-repeat: repeat-x;
-  mask-image: radial-gradient(circle at 8px 0, transparent 7px, black 7.5px);
-  mask-size: 16px 100%;
-  mask-repeat: repeat-x;
-  padding: var(--space-3) var(--space-5) var(--space-5);
-  margin-bottom: var(--space-4);
-}
-
-.ticket::before {
-  content: "";
-  position: absolute;
-  top: 10px;
-  left: 16px;
-  right: 16px;
-  border-top: 1.5px dashed rgba(35, 41, 31, 0.25);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-3);
 }
 
 .stamp {
   display: inline-block;
-  font-family: var(--font-display);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--stamp);
-  border: 2px solid var(--stamp);
-  border-radius: 999px;
+  color: var(--green-deep);
+  background: var(--green-pale);
+  border-radius: var(--radius);
   padding: 2px 8px;
-  transform: rotate(-3deg);
-  opacity: 0.85;
 }
 
-/* Status badges reuse the stamp shape but color by meaning */
-.status { font-family: var(--font-data); font-size: 12px; font-weight: 600;
-  padding: 2px 8px; border-radius: 999px; text-transform: uppercase; }
-.status-pending   { background: var(--paper-dim); color: var(--ink-soft); }
-.status-confirmed { background: var(--leaf-soft); color: #2f4a20; }
-.status-assigned  { background: #dbe8f2; color: #234a63; }
-.status-delivered { background: var(--leaf); color: var(--paper); }
-.status-cancelled { background: var(--clay-soft); color: var(--clay); }
+/* Status: a small square dot + label, not a pill. The dot's color is the
+   only thing that changes between states — everything else about the
+   treatment stays identical, which is what makes it read as data rather
+   than decoration. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 1px;
+}
+.status-pending::before   { background: var(--amber); }
+.status-confirmed::before { background: var(--green); }
+.status-assigned::before  { background: var(--blue); }
+.status-delivered::before { background: var(--green-deep); }
+.status-cancelled::before { background: var(--red); }
 
 /* -------------------------------------------------------------------------
    5. BUTTONS
    ------------------------------------------------------------------------- */
 .btn {
-  font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-size: 12px;
-  border: none;
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 14px;
   border-radius: var(--radius);
   padding: 10px 18px;
   cursor: pointer;
+  border: 1px solid transparent;
 }
 
-.btn-primary { background: var(--maize); color: var(--forest-deep); box-shadow: 0 3px 0 var(--maize-deep); }
-.btn-primary:hover { box-shadow: 0 4px 0 var(--maize-deep); }
-.btn-primary:active { box-shadow: 0 1px 0 var(--maize-deep); transform: translateY(2px); }
+.btn-primary { background: var(--green); color: var(--white); }
+.btn-primary:hover { background: var(--green-deep); }
 
-.btn-danger { background: transparent; color: var(--clay); border: 2px solid var(--clay); }
-.btn-danger:hover { background: var(--clay); color: var(--paper); }
+.btn-danger { background: var(--white); color: var(--red); border-color: var(--red); }
+.btn-danger:hover { background: var(--red-pale); }
 
 .btn-ghost {
-  background: none; border: none; color: var(--maize); font-family: var(--font-body);
-  text-transform: none; letter-spacing: normal; font-weight: 600; cursor: pointer;
-  padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 14px;
+  background: none; border: none; color: var(--ink-soft); font-family: var(--font);
+  font-weight: 500; cursor: pointer; padding: 0; font-size: 14px;
 }
+.btn-ghost:hover { color: var(--green); }
 
 .btn-block { width: 100%; }
 
@@ -201,47 +215,51 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .field { margin-bottom: var(--space-4); }
 .field label {
   display: block;
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--ink-soft);
   margin-bottom: var(--space-2);
 }
 
 .field input, .field select {
   width: 100%;
-  padding: 9px 10px;
-  border: none;
-  border-bottom: 2px solid var(--ink-soft);
-  background: transparent;
-  font-family: var(--font-data);
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-family: var(--font);
   font-size: 14px;
   color: var(--ink);
 }
-.field input:focus, .field select:focus { outline: none; border-bottom-color: var(--leaf); }
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--green);
+}
 
 /* -------------------------------------------------------------------------
-   7. ALERTS
+   7. ALERTS — a left rule instead of a full pastel fill, consistent with
+   the card treatment above.
    ------------------------------------------------------------------------- */
 .alert {
-  font-family: var(--font-body);
+  font-family: var(--font);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   padding: 10px 14px;
   border-radius: var(--radius);
   margin-bottom: var(--space-4);
+  border-left: 3px solid;
 }
-.alert-error   { background: var(--clay-soft); color: var(--clay); }
-.alert-success { background: var(--leaf-soft); color: #2f4a20; }
+.alert-error   { background: var(--red-pale); color: var(--red); border-left-color: var(--red); }
+.alert-success { background: var(--green-pale-status); color: var(--green-deep); border-left-color: var(--green); }
 
 /* -------------------------------------------------------------------------
    8. LOGIN / REGISTER CARDS
    ------------------------------------------------------------------------- */
 .auth-screen { display: flex; justify-content: center; padding-top: var(--space-6); }
-.auth-card { width: 380px; }
-.auth-card h1 { font-size: 19px; text-transform: uppercase; text-align: center; color: var(--forest-deep); }
+.auth-card { width: 380px; border-left-width: 4px; }
+.auth-card h1 { font-size: 20px; text-align: center; }
 .auth-subtitle { text-align: center; font-size: 13px; color: var(--ink-soft); margin-bottom: var(--space-4); }
 .auth-footer { text-align: center; margin-top: var(--space-4); font-size: 13px; color: var(--ink-soft); }
 
@@ -250,13 +268,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
    ------------------------------------------------------------------------- */
 .data-list { list-style: none; margin: 0; padding: 0; }
 
-.row-title { font-family: var(--font-display); font-size: 16px; color: var(--forest-deep); }
-.row-meta { font-size: 12px; color: var(--ink-soft); }
-.row-figure { font-family: var(--font-data); font-weight: 700; }
+.row-title { font-family: var(--font); font-weight: 600; font-size: 15px; color: var(--ink); }
+.row-meta { font-size: 13px; color: var(--ink-soft); margin: var(--space-2) 0; }
+.row-figure { font-weight: 700; color: var(--ink); }
 
-hr.divider { border: none; border-top: 1.5px dashed rgba(35,41,31,0.2); margin: var(--space-3) 0; }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: var(--space-3) 0; }
 
-.empty-note { color: var(--paper); opacity: 0.75; font-style: italic; }
+.empty-note { color: var(--ink-soft); font-size: 14px; }
 
 @media (max-width: 640px) {
   .page-body, .topbar { padding-left: var(--space-4); padding-right: var(--space-4); }

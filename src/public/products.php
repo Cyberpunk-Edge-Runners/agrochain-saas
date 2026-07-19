@@ -6,8 +6,7 @@
 // POST action=create -> insert a new product row
 // POST action=delete -> remove one of YOUR OWN listings
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 $user = requireRole('farmer');
 
@@ -83,7 +82,7 @@ $stmt->execute([$user['id']]);
 $myProducts = $stmt->fetchAll();
 
 $pageTitle = 'My Listings';
-require __DIR__ . '/../includes/partials/header.php';
+require PARTIALS_PATH . '/header.php';
 ?>
 
 <h1>Manage Your Listings</h1>
@@ -154,4 +153,4 @@ require __DIR__ . '/../includes/partials/header.php';
     </ul>
 <?php endif; ?>
 
-<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
+<?php require PARTIALS_PATH . '/footer.php'; ?>

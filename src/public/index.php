@@ -4,8 +4,7 @@
 // The PUBLIC marketplace — no login required. Anyone (buyers, or guests
 // who haven't registered yet) can browse every crop listing here.
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 $user = currentUser();
 
@@ -23,7 +22,7 @@ $stmt = $pdo->query("
 $products = $stmt->fetchAll();
 
 $pageTitle = 'Marketplace';
-require __DIR__ . '/../includes/partials/header.php';
+require PARTIALS_PATH . '/header.php';
 ?>
 
 <h1>Available Produce</h1>
@@ -75,4 +74,4 @@ require __DIR__ . '/../includes/partials/header.php';
     </ul>
 <?php endif; ?>
 
-<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
+<?php require PARTIALS_PATH . '/footer.php'; ?>

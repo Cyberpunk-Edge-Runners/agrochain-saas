@@ -4,8 +4,7 @@
 // GET  -> show the signup form
 // POST -> validate input, hash the password, insert the new user
 
-require_once __DIR__ . '/../includes/auth.php'; // gives us session_start() etc.
-require_once __DIR__ . '/../includes/db.php';            // gives us $pdo
+require_once __DIR__ . '/../includes/bootstrap.php'; // gives us session_start(), $pdo
 
 $error = '';
 
@@ -87,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Create Account';
-require __DIR__ . '/../includes/partials/header.php';
+require PARTIALS_PATH . '/header.php';
 ?>
 
 <div class="auth-screen">
@@ -168,4 +167,4 @@ require __DIR__ . '/../includes/partials/header.php';
     }
 </script>
 
-<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
+<?php require PARTIALS_PATH . '/footer.php'; ?>

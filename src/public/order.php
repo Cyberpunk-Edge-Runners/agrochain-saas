@@ -6,13 +6,10 @@
 // There's no GET view for this file on purpose — nobody visits
 // /order.php directly, it only ever receives a form submission.
 
-// Pulls in session_start(), currentUser(), requireLogin(), requireRole(),
-// requireAnyRole() — everything this file needs for "who is this and are
-// they allowed to be here."
-require_once __DIR__ . '/../includes/auth.php';
-
-// Pulls in $pdo, our shared database connection object.
-require_once __DIR__ . '/../includes/db.php';
+// bootstrap.php pulls in both auth.php (session_start(), currentUser(),
+// requireLogin(), requireRole(), requireAnyRole()) and db.php ($pdo) —
+// everything this file needs, in one line instead of two.
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 // requireRole('buyer') does three things in one call:
 //   1. Calls requireLogin() internally, which redirects guests to

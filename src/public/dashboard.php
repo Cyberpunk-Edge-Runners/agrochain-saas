@@ -1,7 +1,6 @@
 <?php
 // public/dashboard.php
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 $user = requireLogin();
 
@@ -12,7 +11,7 @@ $orderLinkLabels = [
 ];
 
 $pageTitle = 'Dashboard';
-require __DIR__ . '/../includes/partials/header.php';
+require PARTIALS_PATH . '/header.php';
 ?>
 
 <h1>Welcome, <?= htmlspecialchars($user['name']) ?></h1>
@@ -37,4 +36,4 @@ require __DIR__ . '/../includes/partials/header.php';
     <?php endif; ?>
 </div>
 
-<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
+<?php require PARTIALS_PATH . '/footer.php'; ?>

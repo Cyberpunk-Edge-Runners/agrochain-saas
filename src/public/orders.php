@@ -9,8 +9,7 @@
 // POST -> role-specific actions, each one ownership-checked so nobody can
 //         act on an order that isn't theirs to act on
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/bootstrap.php';
 
 // All three roles have a legitimate reason to be here — just very
 // different things once they land.
@@ -187,7 +186,7 @@ if ($user['role'] === 'buyer') {
 }
 
 $pageTitle = 'Orders';
-require __DIR__ . '/../includes/partials/header.php';
+require PARTIALS_PATH . '/header.php';
 
 $titles = [
     'buyer'  => 'My Orders',
@@ -285,4 +284,4 @@ $titles = [
     </ul>
 <?php endif; ?>
 
-<?php require __DIR__ . '/../includes/partials/footer.php'; ?>
+<?php require PARTIALS_PATH . '/footer.php'; ?>
