@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'role'      => $role,
             ];
 
-            header("Location: /dashboard.php");
+            header("Location: " . ROUTE_DASHBOARD);
             exit;
 
         } catch (PDOException $e) {
@@ -98,7 +98,7 @@ require PARTIALS_PATH . '/header.php';
             <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="/register.php">
+        <form method="POST" action="<?= ROUTE_REGISTER ?>">
             <div class="field">
                 <label for="name">Full Name</label>
                 <input id="name" type="text" name="name" required
@@ -143,7 +143,7 @@ require PARTIALS_PATH . '/header.php';
             <button type="submit" class="btn btn-primary btn-block">Create Account</button>
         </form>
 
-        <p class="auth-footer">Already have an account? <a href="/login.php">Sign in</a></p>
+        <p class="auth-footer">Already have an account? <a href="<?= ROUTE_LOGIN ?>">Sign in</a></p>
     </div>
 </div>
 

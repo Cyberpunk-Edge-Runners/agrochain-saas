@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$user['id'], $category, $storedName]);
 
                 flashSet('success', 'Document uploaded successfully.');
-                header('Location: /upload-documents.php');
+                header('Location: ' . ROUTE_UPLOAD_DOCUMENTS);
                 exit;
             } catch (RuntimeException $e) {
                 error_log($e->getMessage());
@@ -106,7 +106,7 @@ require PARTIALS_PATH . '/header.php';
 <?php endif; ?>
 
 <div class="ticket">
-    <form method="POST" action="/upload-documents.php" enctype="multipart/form-data">
+    <form method="POST" action="<?= ROUTE_UPLOAD_DOCUMENTS ?>" enctype="multipart/form-data">
         <div class="field">
             <label for="category">Document Type</label>
             <select id="category" name="category" required>

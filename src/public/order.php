@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     // rendering a page. exit immediately after is important — without it,
     // PHP would keep executing the rest of the script even after sending
     // the redirect header, which could run code we don't want to run.
-    header('Location: /index.php');
+    header('Location: ' . ROUTE_HOME);
     exit;
 }
 
@@ -145,7 +145,7 @@ if ($error === null) {
             // for it. A transaction guarantees both happen, or neither does.
             $pdo->commit();
 
-            header('Location: /orders.php');
+            header('Location: ' . ROUTE_ORDERS);
             exit;
         } else {
             // Validation failed AFTER we started the transaction (e.g.
@@ -182,5 +182,5 @@ if ($error === null) {
 // urlencode() is important here: $error might contain spaces, punctuation,
 // or other characters that aren't safe to put directly into a URL —
 // urlencode() converts them into a safe %XX-escaped form.
-header('Location: /index.php?error=' . urlencode($error));
+header('Location: ' . ROUTE_HOME . '?error=' . urlencode($error));
 exit;

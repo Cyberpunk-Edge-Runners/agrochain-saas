@@ -24,15 +24,15 @@ require PARTIALS_PATH . '/header.php';
 
 <div class="ticket">
     <?php if ($user['role'] === 'farmer'): ?>
-        <p><a href="/products.php">Manage My Listings</a></p>
+        <p><a href="<?= ROUTE_PRODUCTS ?>">Manage My Listings</a></p>
     <?php endif; ?>
 
     <?php if (isset($orderLinkLabels[$user['role']])): ?>
-        <p><a href="/orders.php"><?= htmlspecialchars($orderLinkLabels[$user['role']]) ?></a></p>
+        <p><a href="<?= ROUTE_ORDERS ?>"><?= htmlspecialchars($orderLinkLabels[$user['role']]) ?></a></p>
     <?php endif; ?>
 
     <?php if (in_array($user['role'], ['farmer', 'driver'], true)): ?>
-        <p><a href="/upload-documents.php">Upload Verification Documents</a></p>
+        <p><a href="<?= ROUTE_UPLOAD_DOCUMENTS ?>">Upload Verification Documents</a></p>
     <?php endif; ?>
 </div>
 

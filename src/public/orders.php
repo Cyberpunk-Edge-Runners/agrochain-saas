@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Every action needs a real numeric order_id — bail out early if
     // that's not even the right shape, before touching the database.
     if (!ctype_digit((string) $orderId)) {
-        header('Location: /orders.php');
+        header('Location: ' . ROUTE_ORDERS);
         exit;
     }
 
@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Post/Redirect/Get — same reason as everywhere else in this app:
     // stops a page refresh from re-submitting the same action twice.
-    header('Location: /orders.php');
+    header('Location: ' . ROUTE_ORDERS);
     exit;
 }
 
@@ -228,12 +228,12 @@ $titles = [
 
                     <?php if ($order['status'] === 'pending'): ?>
                         <hr class="divider">
-                        <form method="POST" action="/orders.php" class="inline-form">
+                        <form method="POST" action="<?= ROUTE_ORDERS ?>" class="inline-form">
                             <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                             <input type="hidden" name="action" value="confirm">
                             <button type="submit" class="btn btn-primary">Confirm Order</button>
                         </form>
-                        <form method="POST" action="/orders.php" class="inline-form">
+                        <form method="POST" action="<?= ROUTE_ORDERS ?>" class="inline-form">
                             <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                             <input type="hidden" name="action" value="cancel">
                             <button type="submit" class="btn btn-danger">Cancel Order</button>
@@ -244,7 +244,7 @@ $titles = [
                         <?php if (empty($availableDrivers)): ?>
                             <p class="row-meta"><em>No drivers registered under your co-op yet.</em></p>
                         <?php else: ?>
-                            <form method="POST" action="/orders.php">
+                            <form method="POST" action="<?= ROUTE_ORDERS ?>">
                                 <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                                 <input type="hidden" name="action" value="assign_driver">
                                 <div class="field">
@@ -271,7 +271,7 @@ $titles = [
 
                     <?php if ($order['status'] === 'assigned'): ?>
                         <hr class="divider">
-                        <form method="POST" action="/orders.php"
+                        <form method="POST" action="<?= ROUTE_ORDERS ?>"
                               onsubmit="return confirm('Confirm the goods have been delivered?');">
                             <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
                             <input type="hidden" name="action" value="deliver">

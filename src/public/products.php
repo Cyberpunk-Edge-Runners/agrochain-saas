@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // from here on just reloads the page instead of re-publishing
             // the listing.
             flashSet('success', 'Listing published.');
-            header('Location: /products.php');
+            header('Location: ' . ROUTE_PRODUCTS);
             exit;
         }
 
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$productId, $user['id']]);
 
         flashSet('success', $stmt->rowCount() > 0 ? 'Listing removed.' : 'Listing not found.');
-        header('Location: /products.php');
+        header('Location: ' . ROUTE_PRODUCTS);
         exit;
     }
 }
@@ -96,7 +96,7 @@ require PARTIALS_PATH . '/header.php';
 
 <div class="ticket">
     <h2>Publish a New Listing</h2>
-    <form method="POST" action="/products.php">
+    <form method="POST" action="<?= ROUTE_PRODUCTS ?>">
         <input type="hidden" name="action" value="create">
 
         <div class="field">
@@ -142,7 +142,7 @@ require PARTIALS_PATH . '/header.php';
                     · <span class="stamp"><?= htmlspecialchars($product['region']) ?></span>
                 </p>
 
-                <form method="POST" action="/products.php"
+                <form method="POST" action="<?= ROUTE_PRODUCTS ?>"
                       onsubmit="return confirm('Remove this listing?');">
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">

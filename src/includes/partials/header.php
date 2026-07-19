@@ -20,20 +20,20 @@ $navUser = currentUser();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="<?= ASSET_CSS ?>">
 </head>
 <body>
 <header class="topbar">
-    <a href="/index.php" class="wordmark">AgroChain <span>Marketplace</span></a>
+    <a href="<?= ROUTE_HOME ?>" class="wordmark">AgroChain <span>Marketplace</span></a>
     <nav class="topnav">
         <?php if ($navUser): ?>
-            <a href="/dashboard.php">Dashboard</a>
-            <form method="POST" action="/logout.php" class="inline-form">
+            <a href="<?= ROUTE_DASHBOARD ?>">Dashboard</a>
+            <form method="POST" action="<?= ROUTE_LOGOUT ?>" class="inline-form">
                 <button type="submit" class="btn-ghost">Log Out</button>
             </form>
         <?php else: ?>
-            <a href="/login.php">Sign In</a>
-            <a href="/register.php">Create Account</a>
+            <a href="<?= ROUTE_LOGIN ?>">Sign In</a>
+            <a href="<?= ROUTE_REGISTER ?>">Create Account</a>
         <?php endif; ?>
     </nav>
 </header>

@@ -23,7 +23,7 @@ function currentUser(): ?array {
 function requireLogin(): array {
     $user = currentUser();
     if (!$user) {
-        header("Location: /login.php");
+        header("Location: " . ROUTE_LOGIN);
         exit;
     }
     return $user;

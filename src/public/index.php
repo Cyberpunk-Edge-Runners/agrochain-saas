@@ -55,7 +55,7 @@ require PARTIALS_PATH . '/header.php';
                 <hr class="divider">
 
                 <?php if ($user && $user['role'] === 'buyer'): ?>
-                    <form method="POST" action="/order.php">
+                    <form method="POST" action="<?= ROUTE_ORDER ?>">
                         <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">
                         <div class="field">
                             <label>Bags to order</label>
@@ -67,7 +67,7 @@ require PARTIALS_PATH . '/header.php';
                 <?php elseif ($user): ?>
                     <p class="row-meta"><em>Only buyer accounts can place orders.</em></p>
                 <?php else: ?>
-                    <p class="row-meta"><em><a href="/login.php">Sign in</a> as a buyer to place an order.</em></p>
+                    <p class="row-meta"><em><a href="<?= ROUTE_LOGIN ?>">Sign in</a> as a buyer to place an order.</em></p>
                 <?php endif; ?>
             </li>
         <?php endforeach; ?>

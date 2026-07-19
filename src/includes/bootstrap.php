@@ -17,6 +17,11 @@ define('BASE_PATH', dirname(__DIR__));
 define('INCLUDES_PATH', BASE_PATH . '/includes');
 define('PARTIALS_PATH', INCLUDES_PATH . '/partials');
 
+// Route constants (ROUTE_LOGIN, ROUTE_DASHBOARD, etc.) load first, since
+// auth.php's requireLogin() references ROUTE_LOGIN — it needs to already
+// be defined by the time auth.php runs.
+require_once INCLUDES_PATH . '/routes.php';
+
 // auth.php (session helpers) and db.php ($pdo) are needed by virtually
 // every page, so bootstrap.php pulls both in automatically. A page that
 // also needs storage.php (currently just upload-documents.php) still

@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'email'     => $user['email'],
                 'role'      => $user['role'],
             ];
-            header("Location: /dashboard.php");
+            header("Location: " . ROUTE_DASHBOARD);
             exit;
         } else {
             $error = 'Invalid email or password.';
@@ -57,7 +57,7 @@ require PARTIALS_PATH . '/header.php';
             <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="/login.php">
+        <form method="POST" action="<?= ROUTE_LOGIN ?>">
             <div class="field">
                 <label for="email">Email</label>
                 <input id="email" type="email" name="email" required
@@ -72,7 +72,7 @@ require PARTIALS_PATH . '/header.php';
             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
         </form>
 
-        <p class="auth-footer">Don't have an account? <a href="/register.php">Create one</a></p>
+        <p class="auth-footer">Don't have an account? <a href="<?= ROUTE_REGISTER ?>">Create one</a></p>
     </div>
 </div>
 
