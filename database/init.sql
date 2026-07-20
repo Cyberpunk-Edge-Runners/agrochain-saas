@@ -127,9 +127,22 @@ CREATE TABLE IF NOT EXISTS documents (
 -- -----------------------------------------------------------------------------
 -- Demo seed
 -- -----------------------------------------------------------------------------
-INSERT INTO tenants (name, subdomain) VALUES
-    ('Volta Farmers Co-op', 'volta'),
-    ('Ashanti Agri-Union', 'ashanti');
+INSERT INTO tenants (name, subdomain) 
+VALUES 
+    ('Greater Accra Enterprise', 'greateraccra'),
+    ('Eastern Crops Alliance', 'eastern'),
+    ('Central Maritime & Agro', 'central'),
+    ('Western Resource Hub', 'western'),
+    ('Western North Cultivators', 'westernnorth'),
+    ('Bono Agricultural Union', 'bono'),
+    ('Bono East Organics', 'bonoeast'),
+    ('Ahafo Forestry Co-op', 'ahafo'),
+    ('Oti River Traders', 'oti'),
+    ('Savannah Livestock Group', 'savannah'),
+    ('Northern Grain Masters', 'northern'),
+    ('North East Agro-Trade', 'northeast'),
+    ('Upper East Cultivators', 'uppereast'),
+    ('Upper West Shea Union', 'upperwest');
 
 -- Login with kwame@volta.com / password123
 INSERT INTO users (tenant_id, name, email, role, password_hash) VALUES
