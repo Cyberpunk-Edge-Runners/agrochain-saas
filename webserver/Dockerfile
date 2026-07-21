@@ -16,6 +16,29 @@ COPY webserver/000-default.conf /etc/apache2/sites-available/000-default.conf
 # raw PHP errors/warnings straight onto the page — see uploads.ini for why.
 COPY webserver/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
+# --- Composer + the AWS SDK ---
+#
+# COPY --from=composer:2 grabs just the composer binary out of the
+# OFFICIAL composer Docker image, without pulling in that whole image as
+# a dependency of ours — a common, lightweight pattern for adding a CLI
+# tool into an image that doesn't otherwise need it installed via apt.
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+
+# 1. Install system tools needed by Composer
+RUN apt-get update && apt-get install -y git unzip zip
+
+
+# Copying composer.json BEFORE the rest of the app (nothing else has
+# been copied into /var/www yet at this point — public/ and includes/
+# are bind-mounted at runtime via docker-compose.yml, not baked into the
+# image) means Docker can cache this layer. The SDK only needs
+# re-downloading when composer.json itself changes, not on every
+# rebuild — meaningfully faster iteration once this is set up.
+COPY composer.json composer.lock* /var/www/
+COPY . /var/www/
+RUN cd /var/www && composer install --no-dev --optimize-autoloader
+
 # Pre-create the uploads directory and own it as www-data (the user Apache
 # runs as in this image). This matters specifically because of HOW Docker
 # named volumes work: the first time uploads_data is mounted onto

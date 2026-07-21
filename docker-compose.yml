@@ -1,3 +1,5 @@
+name: agrochain-saas
+
 services:
   # Databse Service
   database:
@@ -25,6 +27,13 @@ services:
     ports:
       - "8080:80"
     volumes:
+      # public/ is the ONLY thing Apache serves — includes/ (real logic:
+      # db.php, auth.php, storage.php) is mounted as a SIBLING, reachable
+      # by PHP's require_once via a filesystem path, but with no URL that
+      # could ever expose it directly. vendor/ (the AWS SDK) is NOT
+      # mounted here at all — it's baked into the image at build time by
+      # the Dockerfile's `composer install` step, so it doesn't need a
+      # live host mount the way editable app code does.
       - ./public:/var/www/html
       - ./includes:/var/www/includes
       - uploads_data:/var/www/uploads
@@ -35,6 +44,14 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      # These four only matter when STORAGE_DRIVER=s3. When it's "local"
+      # (the default), storeDocumentFileS3() never even runs, so the AWS
+      # SDK never tries to read these — safe to leave blank in .env
+      # until you're actually ready to test S3 uploads.
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     depends_on:
       - database
     restart: always
