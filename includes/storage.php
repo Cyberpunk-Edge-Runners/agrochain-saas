@@ -11,15 +11,15 @@
 //
 // Instead, every upload goes through storeDocumentFile() below. It
 // looks at STORAGE_DRIVER (set in .env) to decide where the file actually
-// goes. The rest of the app (upload-document.php) never knows or cares
+// goes. The rest of the app (upload-documents.php) never knows or cares
 // which driver is active — it just calls storeDocumentFile() and gets
 // back a string to save in documents.file_name.
 //
-// To switch to S3 later:
-//   1. composer require aws/aws-sdk-php
-//   2. Fill in storeDocumentFileS3() below with real S3Client calls
-//   3. Set STORAGE_DRIVER=s3 (+ AWS credentials) in .env
-//   4. Nothing else in the app needs to change.
+// STORAGE_DRIVER=s3 is now fully implemented (see storeDocumentFileS3()
+// below) — set STORAGE_DRIVER=local in .env for local dev without
+// touching AWS at all, or STORAGE_DRIVER=s3 (+ AWS_REGION,
+// AWS_S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) to actually
+// upload to S3. Either way, nothing else in the app changes.
 
 /**
  * Save an uploaded document and return the string that should be
@@ -69,32 +69,80 @@ function storeDocumentFileLocal(string $tmpPath, string $safeName): string {
 }
 
 /**
- * S3 storage — NOT implemented yet. This is intentionally left as a stub
- * with a clear error rather than silently falling back to local storage,
- * so that setting STORAGE_DRIVER=s3 too early fails loudly instead of
- * quietly saving files to disk and confusing you later about where they
- * actually went.
+ * S3 storage — uploads the file to the AgroChain documents bucket using
+ * the AWS SDK for PHP.
  */
 function storeDocumentFileS3(string $tmpPath, string $safeName): string {
-    throw new RuntimeException(
-        'STORAGE_DRIVER is set to "s3" but S3 upload isn\'t implemented yet. ' .
-        'Set STORAGE_DRIVER=local in .env until the AWS S3 integration is built.'
-    );
-
-    // Once there's an AWS account and `composer require aws/aws-sdk-php`
-    // has been run, this becomes roughly:
+    // require_once (not require) means this only actually loads the SDK
+    // the FIRST time this function runs in a given request — and since
+    // it's called from inside this function rather than at the top of
+    // the file, the SDK never loads at all when STORAGE_DRIVER=local
+    // (the common case during dev). No reason to pull in a library you're
+    // not using.
     //
-    // $s3 = new Aws\S3\S3Client([
-    //     'version' => 'latest',
-    //     'region'  => getenv('AWS_REGION'),
-    //     // Credentials should come from IAM role / env vars picked up
-    //     // automatically by the SDK — never hardcode keys here.
-    // ]);
-    // $s3->putObject([
-    //     'Bucket'     => getenv('AWS_S3_BUCKET'),
-    //     'Key'        => 'documents/' . $safeName,
-    //     'SourceFile' => $tmpPath,
-    //     'ACL'        => 'private', // uploaded docs aren't public
-    // ]);
-    // return 'documents/' . $safeName; // the S3 key, stored in file_name
+    // BASE_PATH is defined in bootstrap.php as the project root (the
+    // parent of both public/ and includes/) — inside the container,
+    // that's /var/www, which is exactly where the Dockerfile's
+    // `composer install` step created vendor/.
+    require_once BASE_PATH . '/vendor/autoload.php';
+
+    // S3Client is the SDK's main entry point for talking to S3
+    // specifically (the SDK has a separate *Client class for every AWS
+    // service — S3Client, DynamoDbClient, and so on).
+    //
+    // Notice there's NO 'credentials' key being passed here. That's
+    // deliberate, not an oversight: the SDK automatically checks a
+    // standard list of places for credentials — environment variables
+    // named AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are the first
+    // place it looks — before falling back to other methods. Since
+    // docker-compose.yml passes those two env vars into the container,
+    // the SDK finds them on its own. This means our own code never
+    // directly touches the raw secret key value at all — it can't leak
+    // it in a log line or an error message, because it never has it.
+    $s3 = new Aws\S3\S3Client([
+        'version' => 'latest',
+        'region'  => getenv('AWS_REGION'),
+    ]);
+
+    // S3 doesn't really have "folders" the way a filesystem does — it's
+    // a flat store of objects, each identified by a "key" (basically a
+    // string that LOOKS like a file path). Using a "documents/" prefix
+    // here is purely organizational, for when you're browsing the
+    // bucket in the AWS Console — S3 itself doesn't treat it specially.
+    $key = 'documents/' . $safeName;
+
+    // putObject() is the actual API call that uploads the file's bytes.
+    // 'SourceFile' tells the SDK to stream the file straight from disk
+    // rather than us reading it into a PHP variable first — important
+    // for not blowing up memory usage on a large upload.
+    //
+    // 'ServerSideEncryption' => 'AES256' explicitly requests that S3
+    // encrypt this object at rest. The bucket already has default
+    // encryption turned on from when it was created, so this is
+    // technically redundant — but being explicit here means this code
+    // is still correct even if the bucket's default settings ever
+    // change, rather than silently relying on a setting that lives
+    // somewhere else entirely.
+    //
+    // There's deliberately no 'ACL' parameter. Older S3 tutorials often
+    // show one (e.g. 'ACL' => 'private') — but this bucket has Block
+    // Public Access enabled and uses the modern "Bucket owner enforced"
+    // object ownership setting, which DISABLES object-level ACLs
+    // entirely. Passing one would actually cause an error. Access here
+    // is controlled entirely by the IAM policy attached to agrochain-app
+    // (the credential can only PutObject/GetObject on this one bucket)
+    // plus Block Public Access — a cleaner, more current model than
+    // per-object ACLs.
+    $s3->putObject([
+        'Bucket'               => getenv('AWS_S3_BUCKET'),
+        'Key'                  => $key,
+        'SourceFile'           => $tmpPath,
+        'ServerSideEncryption' => 'AES256',
+    ]);
+
+    // This is the string that gets saved into documents.file_name in the
+    // database — for local storage that was just a filename, for S3
+    // it's the object's key, which is what you'd need to fetch it back
+    // again later with a getObject() call.
+    return $key;
 }
