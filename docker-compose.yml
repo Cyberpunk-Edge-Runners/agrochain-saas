@@ -1,24 +1,12 @@
 name: agrochain-saas
 
 services:
-  # Databse Service
-  database:
-    image: mysql:8.0
-    container_name: agro-mysql-db
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "3307:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    restart: always
-
   # Web Server Service
+  #
+  # No "database" service anymore — MySQL now lives on AWS RDS, not in a
+  # local container. DB_HOST below points at the real RDS endpoint
+  # (from .env) instead of the old "database" service name, and there's
+  # no `depends_on` for a database container that no longer exists.
   webserver:
     build:
       context: .
@@ -27,35 +15,20 @@ services:
     ports:
       - "8080:80"
     volumes:
-      # public/ is the ONLY thing Apache serves — includes/ (real logic:
-      # db.php, auth.php, storage.php) is mounted as a SIBLING, reachable
-      # by PHP's require_once via a filesystem path, but with no URL that
-      # could ever expose it directly. vendor/ (the AWS SDK) is NOT
-      # mounted here at all — it's baked into the image at build time by
-      # the Dockerfile's `composer install` step, so it doesn't need a
-      # live host mount the way editable app code does.
       - ./public:/var/www/html
       - ./includes:/var/www/includes
       - uploads_data:/var/www/uploads
     environment:
-      DB_HOST: database
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      DB_HOST: ${DB_HOST}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
-      # These four only matter when STORAGE_DRIVER=s3. When it's "local"
-      # (the default), storeDocumentFileS3() never even runs, so the AWS
-      # SDK never tries to read these — safe to leave blank in .env
-      # until you're actually ready to test S3 uploads.
       AWS_REGION: ${AWS_REGION}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-    depends_on:
-      - database
     restart: always
 
 volumes:
-  db_data:
   uploads_data:
