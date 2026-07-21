@@ -23,6 +23,11 @@ To run this application locally with Docker, follow these steps:
    DB_DATABASE=agrochain_saas
    DB_USER=<your_username>
    DB_PASSWORD=<your_password>
+   AWS_REGION=<region>
+   AWS_S3_BUCKET=<bucket_name>
+   AWS_ACCESS_KEY_ID=<key_id>
+   AWS_SECRET_ACCESS_KEY= <secret_key>
+   STORAGE_DRIVER=s3
    ```
 
 3. **Start the containers:**
