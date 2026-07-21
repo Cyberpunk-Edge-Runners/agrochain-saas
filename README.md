@@ -21,6 +21,7 @@ To run this application locally with Docker, follow these steps:
    ```.env
    DB_ROOT_PASSWORD=<your_root_password>
    DB_DATABASE=agrochain_saas
+   DB_HOST=<db_host>
    DB_USER=<your_username>
    DB_PASSWORD=<your_password>
    AWS_REGION=<region>
