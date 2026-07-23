@@ -1,4 +1,4 @@
-# AgroChain SaaS
+# CultiNet SaaS
 
 A secure multi-tenant SaaS platform for agricultural supply chain tracking.
 
@@ -8,8 +8,8 @@ To run this application locally with Docker, follow these steps:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Cyberpunk-Edge-Runners/agrochain-saas.git
-   cd agrochain-saas
+   git clone https://github.com/Cyberpunk-Edge-Runners/cultinet-saas.git
+   cd cultinet-saas
    ```
 
 2. **Set up your environment file:**
@@ -20,7 +20,7 @@ To run this application locally with Docker, follow these steps:
    database container will start with an empty/misconfigured database.
    ```.env
    DB_ROOT_PASSWORD=<your_root_password>
-   DB_DATABASE=agrochain_saas
+   DB_DATABASE=cultinet_saas
    DB_USER=<your_username>
    DB_PASSWORD=<your_password>
    AWS_REGION=<region>

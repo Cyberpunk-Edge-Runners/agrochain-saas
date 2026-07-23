@@ -16,7 +16,7 @@ $navUser = currentUser();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle) ?> — AgroChain</title>
+    <title><?= htmlspecialchars($pageTitle) ?> — CultiNet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@ $navUser = currentUser();
 </head>
 <body>
 <header class="topbar">
-    <a href="<?= ROUTE_HOME ?>" class="wordmark">AgroChain <span>Marketplace</span></a>
+    <a href="<?= ROUTE_HOME ?>" class="wordmark">CultiNet<span>Marketplace</span></a>
     <nav class="topnav">
         <?php if ($navUser): ?>
             <a href="<?= ROUTE_DASHBOARD ?>">Dashboard</a>

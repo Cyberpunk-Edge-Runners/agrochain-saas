@@ -92,7 +92,7 @@ require PARTIALS_PATH . '/header.php';
 <div class="auth-screen">
     <div class="ticket auth-card">
         <h1>Create Account</h1>
-        <p class="auth-subtitle">Join the AgroChain marketplace</p>
+        <p class="auth-subtitle">Join the CultiNet marketplace</p>
 
         <?php if ($error): ?>
             <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>

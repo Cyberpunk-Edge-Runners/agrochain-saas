@@ -1,4 +1,4 @@
-name: agrochain-saas
+name: cultinet-saas
 
 services:
   # Web Server Service
@@ -11,7 +11,7 @@ services:
     build:
       context: .
       dockerfile: ./webserver/Dockerfile
-    container_name: agro_web-Server
+    container_name: cultinet-Server
     ports:
       - "8080:80"
     volumes:

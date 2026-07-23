@@ -1,5 +1,5 @@
 -- =============================================================================
--- AGROCHAIN — DATABASE SCHEMA
+-- CultiNet — DATABASE SCHEMA
 -- =============================================================================
 -- Runs once, automatically, the first time the MySQL container starts on a
 -- fresh volume. If you've already got a db_data volume from a previous run,
@@ -9,7 +9,7 @@
 --     docker compose up -d --build
 -- =============================================================================
 
-USE agrochain_saas;
+USE cultinet_saas;
 
 -- -----------------------------------------------------------------------------
 -- tenants: one row per organization using the platform (a farmer co-op, an

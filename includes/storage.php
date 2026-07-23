@@ -69,7 +69,7 @@ function storeDocumentFileLocal(string $tmpPath, string $safeName): string {
 }
 
 /**
- * S3 storage — uploads the file to the AgroChain documents bucket using
+ * S3 storage — uploads the file to the CultiNet documents bucket using
  * the AWS SDK for PHP.
  */
 function storeDocumentFileS3(string $tmpPath, string $safeName): string {
@@ -129,7 +129,7 @@ function storeDocumentFileS3(string $tmpPath, string $safeName): string {
     // Public Access enabled and uses the modern "Bucket owner enforced"
     // object ownership setting, which DISABLES object-level ACLs
     // entirely. Passing one would actually cause an error. Access here
-    // is controlled entirely by the IAM policy attached to agrochain-app
+    // is controlled entirely by the IAM policy attached to cultinet-app
     // (the credential can only PutObject/GetObject on this one bucket)
     // plus Block Public Access — a cleaner, more current model than
     // per-object ACLs.

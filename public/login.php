@@ -51,7 +51,7 @@ require PARTIALS_PATH . '/header.php';
 <div class="auth-screen">
     <div class="ticket auth-card">
         <h1>Sign In</h1>
-        <p class="auth-subtitle">Access your AgroChain account</p>
+        <p class="auth-subtitle">Access your CultiNet account</p>
 
         <?php if ($error): ?>
             <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
