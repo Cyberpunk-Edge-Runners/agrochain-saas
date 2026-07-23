@@ -10,6 +10,7 @@ services:
   webserver:
     build:
       context: .
+      network: host
       dockerfile: ./webserver/Dockerfile
     container_name: cultinet-Server
     ports:
