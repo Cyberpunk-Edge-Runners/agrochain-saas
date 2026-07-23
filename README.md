@@ -20,7 +20,12 @@ To run this application locally with Docker, follow these steps:
    database container will start with an empty/misconfigured database.
    ```.env
    DB_ROOT_PASSWORD=<your_root_password>
+<<<<<<< HEAD
    DB_DATABASE=cultinet_saas
+=======
+   DB_DATABASE=agrochain_saas
+   DB_HOST=<db_host>
+>>>>>>> f7521579719b79e72217ddf65d1aecaeef283c90
    DB_USER=<your_username>
    DB_PASSWORD=<your_password>
    AWS_REGION=<region>
