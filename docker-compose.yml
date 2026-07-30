@@ -4,32 +4,47 @@ services:
   # Web Server Service
   #
   # No "database" service anymore — MySQL now lives on AWS RDS, not in a
-  # local container. DB_HOST below points at the real RDS endpoint
-  # (from .env) instead of the old "database" service name, and there's
-  # no `depends_on` for a database container that no longer exists.
-  webserver:
-    build:
-      context: .
-      network: host
-      dockerfile: ./webserver/Dockerfile
-    container_name: cultinet-Server
-    ports:
-      - "8080:80"
-    volumes:
-      - ./public:/var/www/html
-      - ./includes:/var/www/includes
-      - uploads_data:/var/www/uploads
-    environment:
-      DB_HOST: ${DB_HOST}
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
-      AWS_REGION: ${AWS_REGION}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-    restart: always
+  # local container. DB_HOST below points at the real RDS endpoint (from .env)
+  # database:
+  #   image: mysql:8.0
+  #   container_name: agro-mysql-db
+  #   command: --default-authentication-plugin=mysql_native_password
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+  #     MYSQL_DATABASE: ${DB_DATABASE}
+  #     MYSQL_USER: ${DB_USER}
+  #     MYSQL_PASSWORD: ${DB_PASSWORD}
+  #   ports:
+  #     - "3307:3306"
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+  #     - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+  #   restart: always
 
-volumes:
-  uploads_data:
+  services:
+    webserver:
+      build:
+        context: .
+        dockerfile: ./webserver/Dockerfile
+      container_name: cultinet-Server
+      network_mode: "host"
+      command: > # needed to use network_mode: host at the same time expose port 80 out 8080...so this line
+        bash -c "sed -i 's/80/8080/g' /etc/apache2/ports.conf /etc/apache2/sites-available/*.conf && apache2-foreground" 
+      volumes:
+        - ./public:/var/www/html
+        - ./includes:/var/www/includes
+        - uploads_data:/var/www/uploads
+      environment:
+        DB_HOST: ${DB_HOST}
+        MYSQL_DATABASE: ${DB_DATABASE}
+        MYSQL_USER: ${DB_USER}
+        MYSQL_PASSWORD: ${DB_PASSWORD}
+        STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+        AWS_REGION: ${AWS_REGION}
+        AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      restart: always
+
+  volumes:
+    uploads_data:
